@@ -8,7 +8,7 @@ function fCentr = calc_fCentr(nF,fNbVLoc,fNbV,vCoord)
             fCentri = fCentri + vertexCoordinate;
         end
         fCentri = fCentri / 2; % 2 is hardcoded
-        fCentr = [fCentr; fCentri];
+        fCentr = [fCentr fCentri];
     end
 
 end

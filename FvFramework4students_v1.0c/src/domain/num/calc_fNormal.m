@@ -6,7 +6,7 @@ function fNormal = calc_fNormal(fNbVLoc,fNbV,vCoord,fArea)
         firstLoc = vCoord(:,vertexIndices(1));
         secLoc = vCoord(:,vertexIndices(2));
         faceVector = secLoc-firstLoc;
-        normalVector = [faceVector(2); -faceVector(1)];
-        fNormal = [fNormal; normalVector];
+        normalVector = [-faceVector(2); faceVector(1)];
+        fNormal = [fNormal, normalVector];
     end
 end

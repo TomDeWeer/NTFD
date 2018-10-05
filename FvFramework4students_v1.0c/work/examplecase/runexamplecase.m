@@ -22,6 +22,7 @@
 
 clear variables
 clc
+close all
 
 
 % Create a mesh
@@ -83,10 +84,13 @@ scale = 'lin'; lw = 1;
 % % fvmplotfield(T,scale,lw);
 % % Uoost = restrictto(U,getzone(casedef.dom,'OOSTRAND'));
 % % fvmplotvectorfield(Uoost,lw);
+Normals = Field(casedef.dom.allFaces,1);
+set(Normals,casedef.dom.fNormal);
+fvmplotvectorfield(Normals,lw);
 fvmplotmesh(casedef.dom,lw);
 fvmplotcellnumbers(casedef.dom,8);
-% fvmplotfacenumbers(casedef.dom,8);
-% fvmplotvertexnumbers(casedef.dom,8);
+% % fvmplotfacenumbers(casedef.dom,8);
+% % fvmplotvertexnumbers(casedef.dom,8);
 
 
 

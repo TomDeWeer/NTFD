@@ -29,14 +29,76 @@ while iterate
    
    % Set all terms to zero
    reset(eqn); 
-   
+   nC = dom.nC;
+   nIf = dom.nIf;
+   nBf = dom.nBf;
+   Adiag = zeros(nC, 1);
+   AoffdiagI = zeros(2*nIf, 1);
+   AoffdiagB = zeros(2*nBf, 1);
+   kappa = casedef.material.k;
    % Compute coefficients for physical cell eqns and add them to eqn object
-   % ...
+   for i= 1:nIf
+       % Calculating terms of the equations
+       Af = dom.fArea(i);
+       Lxi = dom.fXiMag(i);
+       anb = kappa*Af/Lxi;
+       % Placing terms in matrix
+       % Diagonal
+       firstNbC = dom.fNbC(2*i-1);
+       secondNbC = dom.fNbC(2*i);
+       Adiag(firstNbC) = Adiag(firstNbC) - anb;
+       Adiag(secondNbC) = Adiag(secondNbC) - anb;
+       % Offdiagonal
+       AoffdiagI(2*i-1) = anb;
+       AoffdiagI(2*i) = anb;
+   end
    % Compute coefficients for ghost cell eqns and add them to eqn object
-   % ...
+   for i = 1:nBf
+       % Calculating terms of the equations
+       Af = dom.fArea(nIf+i);
+       Lxi = dom.fXiMag(nIf+i);
+       anb = kappa*Af/Lxi;
+       % Iterating through the neighbouring cells
+       firstNbC = dom.fNbC(2*(nIf+i)-1);
+       secondNbC = dom.fNbC(2*(nIf+i));
+       for indexCell = [firstNbC, secondNbC]
+           % Checking whether it's a physical cell or a ghost cell
+           if indexCell <= dom.nPc
+                Adiag(indexCell) = Adiag(indexCell) - anb;
+           else % If it's a ghost cell
+               % Checking which boundary the face belongs to
+               for randID = 1:length(mesh.bfaceData)
+                   if nIf+i >= mesh.bfaceData(randID).range(1) && ...
+                           nIf+i <= mesh.bfaceData(randID).range(end)
+                       id =  randID;
+                       break
+                   end
+               end
+               % Checking which BC applies at that boundary
+               BC = casedef.BC{id}.kind;
+               switch BC
+                   case 'Dirichlet'
+                       lambda = 1 - norm(dom.cCoord(:,indexCell) ...
+                           - dom.fCoord(:,nFi+i)) / fXiMag(nFi+i);
+                       Adiag(indexCell) = lambda;
+                       GCvglOffdiag = 1-lambda;
+                   case 'Neumann'
+                       Adiag(indexCell) = -1/casedef.fXiMag(nIf+i);
+                       GCvglOffdiag = 1/casedef.fXiMag(nIf+i);
+                   otherwise
+                       disp('BC not found');
+               end
+           end
+       end
+       % Filling in the offdiagonal elements
+       AoffdiagB(2*i-1) = anb;
+       AoffdiagB(2*i) = GCvglOffdiag;
+   end
+   A = [Adiag; AoffdiagI; AoffdiagB];
+   
    eqn.adata = rand(eqn.nnz,1); % just a meaningless example adata
    eqn.bdata = rand(eqn.n,1);   % just a meaningless example bdata
-      
+   
    % Create a matlab sparse linear system from the eqn object
    [A,b] = to_msparse(eqn);
    x = get(T);

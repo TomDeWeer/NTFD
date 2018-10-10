@@ -35,6 +35,7 @@ while iterate
    Adiag = zeros(nC, 1);
    AoffdiagI = zeros(2*nIf, 1);
    AoffdiagB = zeros(2*nBf, 1);
+   b = zeros(nC,1);
    kappa = casedef.material.k;
    % Compute coefficients for physical cell eqns and add them to eqn object
    for i= 1:nIf
@@ -67,9 +68,9 @@ while iterate
                 Adiag(indexCell) = Adiag(indexCell) - anb;
            else % If it's a ghost cell
                % Checking which boundary the face belongs to
-               for randID = 1:length(mesh.bfaceData)
-                   if nIf+i >= mesh.bfaceData(randID).range(1) && ...
-                           nIf+i <= mesh.bfaceData(randID).range(end)
+               for randID = 1:length(casedef.BC)
+                   range = casedef.dom.getzone(casedef.BC{randID}.zoneID).range;
+                   if nIf+i >= range(1) && nIf+i <= range(end)
                        id =  randID;
                        break
                    end
@@ -79,15 +80,16 @@ while iterate
                switch BC
                    case 'Dirichlet'
                        lambda = 1 - norm(dom.cCoord(:,indexCell) ...
-                           - dom.fCoord(:,nFi+i)) / fXiMag(nFi+i);
+                           - dom.fCoord(:,nIf+i)) / dom.fXiMag(nIf+i);
                        Adiag(indexCell) = lambda;
                        GCvglOffdiag = 1-lambda;
                    case 'Neumann'
-                       Adiag(indexCell) = -1/casedef.fXiMag(nIf+i);
-                       GCvglOffdiag = 1/casedef.fXiMag(nIf+i);
+                       Adiag(indexCell) = -1/dom.fXiMag(nIf+i);
+                       GCvglOffdiag = 1/dom.fXiMag(nIf+i);
                    otherwise
                        disp('BC not found');
                end
+               b(indexCell) = casedef.BC{id}.data.bcval;
            end
        end
        % Filling in the offdiagonal elements
@@ -96,8 +98,8 @@ while iterate
    end
    A = [Adiag; AoffdiagI; AoffdiagB];
    
-   eqn.adata = rand(eqn.nnz,1); % just a meaningless example adata
-   eqn.bdata = rand(eqn.n,1);   % just a meaningless example bdata
+   eqn.adata = A;
+   eqn.bdata = b;
    
    % Create a matlab sparse linear system from the eqn object
    [A,b] = to_msparse(eqn);
@@ -130,7 +132,7 @@ result.Tconverged = Tconverged;
 result.niter = niter;
 result.TResnorm = TResnorm;
 result.TRes = Field(dom.allCells,0);
-   set(result.TRes,TRes');
+set(result.TRes,TRes');
 result.T = T;
 
 

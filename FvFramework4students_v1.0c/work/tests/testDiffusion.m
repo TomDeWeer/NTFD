@@ -63,18 +63,23 @@ fvmplotfield(result.T,scale,lw);
 % Getting the temperatures at the horizontal line x=0 to x=1, at y=0.55
 line = zeros(10,1);
 linexloc = zeros(10,1);
+% Loop over all cells
 for i=1:result.T.dom.nC
     x = result.T.dom.cCoord(1,i);
     y = result.T.dom.cCoord(2,i);
+    % Select the cells at the horizontal line
     if y < 0.56 && y>0.54 && x>0 && x<1
         ix = round((x+0.05)/0.1);
+        % Store temperature
         line(ix) = result.T.data(i);
+        % Store cell x coordinate
         linexloc(ix) = x;
     end
 end
+% Plot results
 figure()
 plot(line, linexloc)
-realTempF = @(x) (1-x);
+realTempF = @(x) (1-x); % Analytic solution(linear)
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realTempF(linexloc(i));
@@ -132,7 +137,7 @@ scale = 'lin'; lw = 1;
 fvmplotfield(result.T,scale,lw);
 
 % Verifying accuracy
-% analytic solution
+% analytic solution: eigenfunction
 Tn = @(x,y,n) sin(pi*(0.5+n)*y).*cosh(pi*(0.5+n)*x)*2/(pi*(0.5+n)*cosh(pi*(0.5+n)));
 [X,Y] = meshgrid(0:0.01:1,0:0.01:1);
 T = zeros(size(X));
@@ -152,22 +157,29 @@ contourf(X,Y,T)
 maxErr = 0;
 avgErr = 0;
 err0503 = 0;
+% Loop over all cells
 for i=1:result.T.dom.nC
     x = result.T.dom.cCoord(1,i);
     y = result.T.dom.cCoord(2,i);
+    % Only keep the interior cells
     if x>0 && y>0 && x<1 && y<1
         Tapprox = result.T.data(i);
+        % Use knowledge from analyse 3 to compute exact solution(first 200 terms)
         Texact = 0;
         for n = 0:200
             Texact = Texact+ Tn(x, y, n);
         end
+        % Compute relative error
         err = abs(Texact-Tapprox)/Texact;
+        % Compute average error
         avgErr = avgErr + err;
+        % Update maximum error
         if err>maxErr
             maxErr = err;
             maxErrx = x;
             maxErry = y;
         end
+        % Compute error at specific point(DOES NOT WORK YET)
         if x==0.5 && y==0.3
             err0503 = err
         end
@@ -175,4 +187,7 @@ for i=1:result.T.dom.nC
 end
 avgErr = avgErr/(N^2)
 maxErr
+
+% Third testcase: check the influence of changing cell sizes
+
 

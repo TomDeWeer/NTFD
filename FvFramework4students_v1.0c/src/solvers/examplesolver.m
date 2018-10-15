@@ -51,6 +51,7 @@ while iterate
        anb = -kappa*Af/Lxi;
        % Calculating convection terms of the equations
        n = dom.fNormal(:,i);
+       norm(n)
        unf = dot(U.data(:,i),n); % n's direction is from firstNbC to second
        lambda = getLambda(firstNbC,i);
        firstContribution = lambda*unf*Af;       % the +- signs are

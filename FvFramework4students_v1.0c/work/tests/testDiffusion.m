@@ -15,11 +15,11 @@ T = Field(casedef.dom.allCells,0);     % Temperature [K] (scalar); empty field
 randomdata = rand(T.elsize,T.elcountzone)-0.5;
 set(T,randomdata);                     % Set with random numbers
 
-% U = Field(casedef.dom.allFaces,1);     % Velocity [m/s] (vector);
-% set(U,[rand(1,U.elcountzone);rand(1,U.elcountzone)]);
+U = Field(casedef.dom.allFaces,1);     % Velocity [m/s] (vector);
+set(U,[rand(1,U.elcountzone);rand(1,U.elcountzone)]);
 % reset(U,[1;0.2]); 
 % reset(U,[0; 0]);                          % Reset with all zeros
-
+casedef.U0 = U;
 
 % Define material properties
 casedef.material.k = 16;  % Thermal conductivity [W/(m K)]
@@ -86,7 +86,7 @@ err = norm(realLine-line)
 % right and T=0 at the bottom
 clear all; close all;
 % Create a mesh
-N = 200
+N = 50
 seedI = LineSeed.lineSeedOneWayBias([0 0],[1 0],N,1.00,'o');
 seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 1],N,1.00,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
@@ -101,6 +101,8 @@ randomdata = rand(T.elsize,T.elcountzone)-0.5;
 set(T,randomdata);                     % Set with random numbers
 % Define material properties
 casedef.material.k = 16;  % Thermal conductivity [W/(m K)]
+U = Field(casedef.dom.allFaces,1);     % Velocity [m/s] (vector);
+set(U,[rand(1,U.elcountzone);rand(1,U.elcountzone)]);
 % Define boundary conditions
 jBC = 0;
 jBC = jBC+1;

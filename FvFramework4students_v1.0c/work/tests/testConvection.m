@@ -2,8 +2,8 @@
 % from left to right
 clear all; close all;
 % Create a mesh
-Nx = 100
-dx = 1/Nx
+Nx = 100;
+dx = 1/Nx;
 L = 1;
 V = 100;
 D = 16; 
@@ -21,7 +21,7 @@ T = Field(casedef.dom.allCells,0);     % Temperature [K] (scalar); empty field
 randomdata = rand(T.elsize,T.elcountzone)-0.5;
 set(T,randomdata);                     % Set with random numbers
 
-U = Field(casedef.dom.allFaces,1);     % Velocity [m/s] (vector);
+U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
 set(U,[V*ones(1,U.elcountzone);zeros(1,U.elcountzone)]);
 % reset(U,[1;0.2]); 
 % reset(U,[0; 0]);                          % Reset with all zeros
@@ -79,7 +79,7 @@ for i=1:result.T.dom.nC
     end
 end
 figure()
-plot(linexloc, line)
+plot(line, linexloc)
 hold on
 realTempF = @(x) 1-((exp(Pe*x)-1)/(exp(Pe)-1));
 realLine = zeros(size(line));

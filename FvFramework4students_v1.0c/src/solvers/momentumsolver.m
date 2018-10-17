@@ -8,7 +8,7 @@
 % by Frederik Rogiers
 %
 %==========================================================================
-function result = examplesolver(casedef)
+function result = momentumsolver(casedef)
 dom = casedef.dom;
 
 % Anonymous function for determining lambda (used in at face evaluations)
@@ -20,7 +20,12 @@ T = Field(dom.allCells,0);      % Temperature [K] (scalar); empty field
 reset(T,0);                     % Reset with all zeros
 U = casedef.U0;
 % ... Create all other required data structures
-
+nC = dom.nC;
+nIf = dom.nIf;
+nBf = dom.nBf;
+% initialise u and v
+u = zeros(nC);
+v = zeros(nC);
 % Create an equation object for holding a scalar conservation equation
 eqn = ScalarFvEqn2(dom);
 
@@ -31,44 +36,55 @@ while iterate
    niter = niter+1;
    
    % Set all terms to zero
-   reset(eqn); 
-   nC = dom.nC;
-   nIf = dom.nIf;
-   nBf = dom.nBf;
+   reset(eqn);
+   % Momentum equation in x direction
    Adiag = zeros(nC, 1);
    AoffdiagI = zeros(2*nIf, 1);
    AoffdiagB = zeros(2*nBf, 1);
    b = zeros(nC,1);
    kappa = casedef.material.k;
+   % add constant diagonal terms to A
+   for i=1:nC
+       Ac = % cell surface area
+       Adiag(i) = Adiag(i) + Ac/dt;
+   end
+   % add source terms
+   for i=1:nC
+       gradPx = gradP(1);
+       b(i) = -(1/rho)*gradPx *Ac + Ac*(u(i))/dt;
+   end
    % Compute coefficients for physical cell eqns and add them to eqn object
    for i= 1:nIf
-       % Determining the indeces of the neighbouring cells
+       % Determining the indices of the neighbouring cells
        firstNbC = dom.fNbC(2*i-1);
        secondNbC = dom.fNbC(2*i);
        % Calculating diffusion terms of the equations
        Af = dom.fArea(i);
        Lxi = dom.fXiMag(i);
-       anb = kappa*Af/Lxi;
+       anb = -kappa*Af/Lxi;
+       lambda = getLambda(firstNbC,i);
        % Calculating convection terms of the equations
        n = dom.fNormal(:,i);
-       unf = dot(U.data(:,i),n); % n's direction is from firstNbC to second
-       lambda = getLambda(firstNbC,i);
+       uface = [lambda*u(firstNbC) + (1-lambda)*u(secondNbC); ...
+           lambda*v(firstNbC) + (1-lambda)*v(secondNbC)]; % works if U is defined on the cells
+       unf = dot(uface,n); % n's direction is from firstNbC to second
        firstContribution = lambda*unf*Af;       % the +- signs are
-       secondContribution = -(1-lambda)*unf*Af; % determined by n
+       secondContribution = (1-lambda)*unf*Af; % determined by n
+       viscousContribution = nu*Af/Lxi;
        % Placing terms in matrix
        % Diagonal
-       Adiag(firstNbC) = Adiag(firstNbC) - anb + firstContribution;
-       Adiag(secondNbC) = Adiag(secondNbC) - anb + secondContribution;
+       Adiag(firstNbC) = Adiag(firstNbC) - anb + firstContribution + viscousContribution;
+       Adiag(secondNbC) = Adiag(secondNbC) - anb - secondContribution + viscousContribution;
        % Offdiagonal
-       AoffdiagI(2*i-1) = anb - secondContribution;
-       AoffdiagI(2*i) = anb - firstContribution;
+       AoffdiagI(2*i-1) = anb + secondContribution - viscousContribution;
+       AoffdiagI(2*i) = anb - firstContribution - viscousContribution;
    end
    % Compute coefficients for ghost cell eqns and add them to eqn object
    for i = 1:nBf
        % Calculating terms of the equations
        Af = dom.fArea(nIf+i);
        Lxi = dom.fXiMag(nIf+i);
-       anb = kappa*Af/Lxi;
+       anb = -kappa*Af/Lxi;
        % Iterating through the neighbouring cells
        firstNbC = dom.fNbC(2*(nIf+i)-1);
        secondNbC = dom.fNbC(2*(nIf+i));

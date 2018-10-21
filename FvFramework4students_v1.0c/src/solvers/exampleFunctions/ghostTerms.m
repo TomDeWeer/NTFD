@@ -18,15 +18,27 @@ switch BC
     case 'Dirichlet'
         % Determining lambda using the anonymous function
         lambda = getLambda(dom,faceIndex);
-        ghostDiag = lambda;
-        ghostOffdiag = 1-lambda;
+        ghostDiag = 1-lambda; % IK HEB HET HIER OMGEDRAAID
+        ghostOffdiag = lambda;
+        bValue = casedef.BC{id}.data.bcval;
     case 'Neumann'
-        ghostDiag = -1/dom.fXiMag(faceIndex);
-        ghostOffdiag = 1/dom.fXiMag(faceIndex);
+        K = casedef.material.k;
+        Af = dom.fArea(faceIndex);
+        ksi = dom.fXiMag(faceIndex); % niet nodig
+        ghostDiag = K/(ksi);
+        ghostOffdiag = -K/(ksi);
+        phi = casedef.BC{id}.data.bcval;
+        if isa(phi, 'function_handle')
+            pos = dom.fCoord(:,faceIndex);
+            bValue = phi(pos(1),pos(2));
+        else
+            bValue = phi;
+        end
+        
     otherwise
         disp('BC not found');
 end
-bValue = casedef.BC{id}.data.bcval;
+
 
 end
 

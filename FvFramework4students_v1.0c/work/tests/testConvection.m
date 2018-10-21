@@ -79,12 +79,12 @@ for i=1:result.T.dom.nC
     end
 end
 figure()
-plot(line, linexloc)
+plot(line, linexloc,'b')
 hold on
 realTempF = @(x) 1-((exp(Pe*x)-1)/(exp(Pe)-1));
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realTempF(linexloc(i));
 end
-plot(realLine, linexloc)
+%plot(realLine, linexloc,'r')
 err = norm(realLine-line)

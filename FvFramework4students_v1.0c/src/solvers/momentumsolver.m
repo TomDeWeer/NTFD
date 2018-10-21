@@ -69,14 +69,14 @@ while iterate
            lambda*v(firstNbC) + (1-lambda)*v(secondNbC)]; % works if U is defined on the cells
        unf = dot(uface,n); % n's direction is from firstNbC to second
        firstContribution = lambda*unf*Af;       % the +- signs are
-       secondContribution = (1-lambda)*unf*Af; % determined by n
+       secondContribution = -(1-lambda)*unf*Af; % determined by n
        viscousContribution = nu*Af/Lxi;
        % Placing terms in matrix
        % Diagonal
        Adiag(firstNbC) = Adiag(firstNbC) - anb + firstContribution + viscousContribution;
-       Adiag(secondNbC) = Adiag(secondNbC) - anb - secondContribution + viscousContribution;
+       Adiag(secondNbC) = Adiag(secondNbC) - anb + secondContribution + viscousContribution;
        % Offdiagonal
-       AoffdiagI(2*i-1) = anb + secondContribution - viscousContribution;
+       AoffdiagI(2*i-1) = anb - secondContribution - viscousContribution;
        AoffdiagI(2*i) = anb - firstContribution - viscousContribution;
    end
    % Compute coefficients for ghost cell eqns and add them to eqn object

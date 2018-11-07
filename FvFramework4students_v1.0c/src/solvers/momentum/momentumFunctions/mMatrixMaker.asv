@@ -1,4 +1,4 @@
-function [ Au, bu, Av, bv ] = mMatrixMaker( casedef )
+function [ A, b ] = mMatrixMaker( casedef )
 %MATRIXMAKER Returns the sparse matrix in vector form.
 %   Detailed explanation goes here
 
@@ -25,8 +25,8 @@ Avdiag = zeros(nC, 1);
 Avoffdiag = zeros(2*(nIf+nBf), 1);
 bu = zeros(nC,1);
 bv = zeros(nC,1);
-dt = casedef.iteration.dt;
-rho = casedef.material.rho;
+u = casedef.U;
+v = casedef.U;
 % add constant diagonal terms to A
 for i=1:nC
    Ac = casedef.dom.cVol(i);% cell surface area
@@ -35,11 +35,9 @@ for i=1:nC
 end
 % add source terms
 for i=1:nC
-   gradP = casedef.gradP.data(:,i);
-   ui = casedef.U.data(1,i);
-   vi = casedef.U.data(2,i);
-   bu(i) = -(1/rho)*gradP(1)*Ac + Ac*(ui)/dt;
-   bv(i) = -(1/rho)*gradP(2)*Ac + Ac*(vi)/dt;
+   ui = casedef.U
+   bu(i) = -(1/rho)*gradP(1)*Ac + Ac*(u(i))/dt;
+   bv(i) = -(1/rho)*gradP(2)*Ac + Ac*(v(i))/dt;
 end
 % Compute coefficients for physical cell eqns and add them to eqn object
 for i= 1:nIf+nBf
@@ -68,7 +66,6 @@ for i= 1:nIf+nBf
     end
 end
 
-Au = [Audiag; Auoffdiag];
-Av = [Avdiag; Avoffdiag];
+A = [Adiag; Aoffdiag];
 
 end

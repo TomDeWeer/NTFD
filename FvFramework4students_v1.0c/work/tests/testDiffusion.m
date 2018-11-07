@@ -51,7 +51,7 @@ casedef.iteration.TTol     = 1e-6;
 
 
 % Call solver
-result = examplesolver(casedef);
+result = temperaturesolver(casedef);
 
 
 % Plot result
@@ -337,7 +337,9 @@ casedef.BC{jBC}.data.bcval = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'NOORDRAND';
 casedef.BC{jBC}.kind   = 'Neumann';
-casedef.BC{jBC}.data.bcval = @(x,y) sin(pi*x/L); % de flux door deze wand is 1W/m
+casedef.BC{jBC}.data.bcval = @(x,y) sin(pi*x/L); 
+% de flux die door deze wand 
+% naar binnen stroomt is 1W/m
 
 
 % Set up iteration parameters

@@ -8,7 +8,7 @@
 % by Frederik Rogiers
 %
 %==========================================================================
-function result = examplesolver(casedef)
+function result = temperaturesolver(casedef)
 dom = casedef.dom;
 
 % Create field objects
@@ -28,7 +28,7 @@ while iterate
     % Set all terms to zero
     reset(eqn); 
     
-    [A,b] = matrixMaker(casedef);
+    [A,b] = tMatrixMaker(casedef);
     
     eqn.adata = A;
     eqn.bdata = b;

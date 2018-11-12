@@ -46,7 +46,7 @@ while iterate
     uRes = bu-Au*u;
     vRes = bv-Av*v;
     UResnorm = norm([uRes;vRes]); 
-    fprintf("It %d : residual norm =  %f \n",niter, UResnorm)
+    fprintf("It %d : residual norm =  %.12f \n",niter, UResnorm)
     if UResnorm < casedef.iteration.UTol
         Uconverged = true;
         iterate = false;

@@ -35,6 +35,7 @@ for i=1:nC
 end
 % add source terms
 for i=1:nC
+   Ac = casedef.dom.cVol(i);% cell surface area
    gradP = casedef.gradP.data(:,i);
    ui = casedef.U.data(1,i);
    vi = casedef.U.data(2,i);

@@ -21,7 +21,7 @@ casedef.dom = newdomain(mesh,'MyDomain');
 
 % Set up initial fields
 U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
-set(U,[rand(1,U.elcountzone);rand(1,U.elcountzone)]);
+set(U,[ones(1,U.elcountzone);ones(1,U.elcountzone)]);
 % reset(U,[1;0.2]); 
 % reset(U,[0; 0]);                          % Reset with all zeros
 casedef.U = U; % initial guess
@@ -107,13 +107,37 @@ xlabel("y")
 ylabel("u_x")
 title("Fully developed flow profile")
 
-realU = @(y) (R^2/(4*nu))*-dPx*(1-((R-y)/R)^2); % Analytic solution(linear)
+realU = @(y) (R^2/(2*nu))*-dPx*(1-((R-y)/R)^2); % Analytic solution(linear)
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realU(lineyloc(i));
 end
 plot(lineyloc, realLine)
 err = norm(realLine-line)
+
+% comparing to analytical solution: horizontal line
+line = zeros(Nx,1);
+linexloc = zeros(Nx,1);
+% Loop over all cells
+for i=1:result.U.dom.nC
+    x = result.U.dom.cCoord(1,i);
+    y = result.U.dom.cCoord(2,i);
+    % Select the cells at the vertical line
+    if y < (0.5*Ly+dy) && y>(0.5*Ly) && x>0 && x<Lx
+        ix = round((x+0.5*dx)/dx);
+        % Store temperature
+        line(ix) = result.U.data(1,i);
+        % Store cell x coordinate
+        linexloc(ix) = x;
+    end
+end
+% Plot results
+figure()
+hold on;
+plot(linexloc, line)
+xlabel("y")
+ylabel("u_x")
+title("Horizontal line")
 
 
 

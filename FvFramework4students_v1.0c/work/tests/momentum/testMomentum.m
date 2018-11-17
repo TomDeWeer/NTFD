@@ -1,15 +1,15 @@
-% First testcase: 1D flow from left to right, parabolic velocity inlet,
-% converged velocity output, no pressure gradient???
 clear all; close all;
 
 % Create a mesh
 Lx = 1;
 Ly = 1;
-R = Ly/2;
 Nx = 20;
 Ny = 20;
-nu = 1;
-rho = 1;
+dPdx = -10;
+Uxtop = 2; % m/s
+mu = 2;
+rho = 10;
+nu = mu/rho;
 dx = Lx/Nx;
 dy = Ly/Ny;
 seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
@@ -28,10 +28,7 @@ casedef.U = U; % initial guess
 gradP = Field(casedef.dom.allCells,1); % Pressure
 gradP0 = [];
 for i=1:casedef.dom.nC
-    % pos = casedef.dom.cCoord(i); % if its a function of position
-    dPx = -1; % positive pressure gradient accelarating the flow
-    dPy = 0;
-    gradP0 = [gradP0, [dPx; dPy]];
+    gradP0 = [gradP0, [dPdx; 0]];
 end
 set(gradP,gradP0)
 casedef.gradP = gradP;
@@ -59,7 +56,7 @@ casedef.BC{jBC}.data.bcval = [0, 0];
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'NOORDRAND';
 casedef.BC{jBC}.kind   = 'Dirichlet';
-casedef.BC{jBC}.data.bcval = [0, 0];
+casedef.BC{jBC}.data.bcval = [Uxtop, 0];
 
 % Set up iteration parameters
 casedef.iteration.maxniter = 1000;
@@ -107,7 +104,7 @@ xlabel("y")
 ylabel("u_x")
 title("Fully developed flow profile")
 
-realU = @(y) (R^2/(2*nu))*-dPx*(1-((R-y)/R)^2); % Analytic solution(linear)
+realU = @(y) (-dPdx/(2*mu))*y*(Ly-y)+Uxtop*y/Ly; % Analytic solution
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realU(lineyloc(i));

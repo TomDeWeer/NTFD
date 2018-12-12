@@ -1,13 +1,13 @@
 % Fourth testcase: influence of neumann boundary, sinusiodal flux
 % at the top, isolated sides and grounded temperature at bottom
 clear all; close all;
-H = 0.5;
-L = 1;
+H = 1;
+L = 2;
 
 K = 0.01;
-Nx = 50*L;
+Nx = 20*L;
 dx = L/Nx;
-Ny = 50*H;
+Ny = 20*H;
 dy = H/Ny;
 % Create a mesh
 seedI = LineSeed.lineSeedOneWayBias([0 0],[L 0],Nx,0.95,'o');
@@ -66,14 +66,14 @@ result = temperaturesolver(casedef);
 
 % Plot result
 figure; hold on; axis off; axis equal; colormap(jet(50));
-scale = 'lin'; lw = 1;
+scale = 'lin'; lw = 1; colorbar();
 fvmplotfield(result.T,scale,lw);
 
 % Verifying accuracy
 % analytic solution: eigenfunction
-An = @(n) 8*n/(K*(1-n^2)*(2*pi*n+1));
+An = @(n) (L/(n*pi*cosh(n*pi*H/L)))*2/(pi*K*(1-n^2));
 A0 = 2*L/(pi*K);
-Tn = @(x,y,n) cos(n*pi*x/L).*sinh(n*pi*y/L)*An(n)*(L/(n*pi*cosh(n*pi*H/L)));
+Tn = @(x,y,n) cos(n*pi*x/L).*sinh(n*pi*y/L)*An(n);
 [X,Y] = meshgrid(0:dx:L-dx,0:dy:H-dy);
 X = X+dx/2;
 Y = Y+dy/2;
@@ -95,7 +95,7 @@ shading interp
 
 figure()
 contourf(X, Y, T,20)
-
+colorbar();
 Ni=0;
 maxErr = 0;
 avgErr = 0;

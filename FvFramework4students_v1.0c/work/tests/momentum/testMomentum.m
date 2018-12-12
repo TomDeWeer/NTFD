@@ -7,13 +7,13 @@ Nx = 20;
 Ny = 20;
 dPdx = -10;
 Uxtop = 2; % m/s
-mu = 2;
+mu = 4;
 rho = 10;
 nu = mu/rho;
 dx = Lx/Nx;
 dy = Ly/Ny;
 seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
-seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.00,'o');
+seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,0.95,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
 mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
@@ -61,7 +61,7 @@ casedef.BC{jBC}.data.bcval = [Uxtop, 0];
 % Set up iteration parameters
 casedef.iteration.maxniter = 1000;
 casedef.iteration.UTol     = 1.e-10;
-casedef.iteration.dt = 2;
+casedef.iteration.dt = 20;
 
 % Call solver
 result = momentumsolver(casedef);
@@ -81,19 +81,17 @@ quiver(casedef.dom.cCoord(1,:),...
     casedef.dom.cCoord(2,:),result.U.data(1,:),result.U.data(2,:));
 
 % comparing to analytical solution
-line = zeros(Ny,1);
-lineyloc = zeros(Ny,1);
+line = [];
+lineyloc = [];
 % Loop over all cells
 for i=1:result.U.dom.nC
     x = result.U.dom.cCoord(1,i);
     y = result.U.dom.cCoord(2,i);
     % Select the cells at the vertical line
     if x < (0.5*Lx+dx) && x>(0.5*Lx) && y>0 && y<Ly
-        iy = round((y+0.5*dy)/dy);
-        % Store temperature
-        line(iy) = result.U.data(1,i);
+        line = [line, result.U.data(1,i)];
         % Store cell x coordinate
-        lineyloc(iy) = y;
+        lineyloc = [lineyloc , y];
     end
 end
 % Plot results
@@ -104,13 +102,51 @@ xlabel("y")
 ylabel("u_x")
 title("Fully developed flow profile")
 
+
 realU = @(y) (-dPdx/(2*mu))*y*(Ly-y)+Uxtop*y/Ly; % Analytic solution
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realU(lineyloc(i));
 end
 plot(lineyloc, realLine)
-err = norm(realLine-line)
+
+
+maxErr = 0;
+avgErr = 0;
+Ni=0;
+for i=1:result.U.dom.nC
+    x = result.U.dom.cCoord(1,i);
+    y = result.U.dom.cCoord(2,i);
+    % Only keep the interior cells
+    if x>0 && y>0 && x<Lx && y<Ly
+        Uxapprox = result.U.data(1,i);
+        Uxexact = realU(y);
+        % Compute relative error
+        err = abs((Uxexact-Uxapprox)/Uxexact);
+        % Compute average error
+        avgErr = avgErr + err;
+        Ni = Ni+1;
+        % Update maximum error
+        if err>maxErr
+            maxErr = err;
+            maxErrx = x;
+            maxErry = y;
+        end
+    end
+end
+avgErr = avgErr/Ni;
+fprintf("Maximum error: %.10f \n", maxErr)
+
+% convergence experiment results
+Ns = [5, 10, 20, 40, 80];
+MaximumErrors = [0.0425454738, 0.0256223436, 0.0160548306, 0.0116272614, 0.0101162927];
+
+
+figure()
+loglog(Ns,MaximumErrors, "x")
+xlabel("N")
+ylabel("max error")
+title("Convergence on an NxN grid")
 
 % comparing to analytical solution: horizontal line
 line = zeros(Nx,1);

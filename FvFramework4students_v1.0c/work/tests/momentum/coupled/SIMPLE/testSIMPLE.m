@@ -3,15 +3,15 @@ clear all; close all;
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 5;
-Ny = 5;
+Nx = 50;
+Ny = 50;
 mu = 4;
 dPdx = -10;
 Uxtop = 0;
 p0 = 5;
 rho = 10;
 nu = mu/rho;
-dx = Lx/Nx;
+dx = Lx/Nx; 
 dy = Ly/Ny;
 seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
 seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.00,'o');
@@ -54,13 +54,13 @@ casedef.BC{jBC}.zoneID = 'WESTRAND';
 casedef.BC{jBC}.velocityKind   = 'Dirichlet';
 casedef.BC{jBC}.data.velocity = @(x,y) [ufunc(x,y) , vfunc(x,y)]; % uniform velocity inlet
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = p0; % prescribed pressure
+casedef.BC{jBC}.data.pressure = pfunc; % prescribed pressure
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'OOSTRAND';
 casedef.BC{jBC}.velocityKind   = 'Neumann';
 casedef.BC{jBC}.data.velocity = [0, 0]; % developed velocity outlet, nonchanging
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = 0; % prescribed pressure
+casedef.BC{jBC}.data.pressure = pfunc; % prescribed pressure
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'ZUIDRAND';
 casedef.BC{jBC}.velocityKind   = 'Dirichlet';
@@ -74,21 +74,26 @@ casedef.BC{jBC}.data.velocity = [0 , 0]; % no slip condition
 casedef.BC{jBC}.pressureKind   = 'Neumann';
 casedef.BC{jBC}.data.pressure = 0; % no normal pressure derivative
 
+
 % Set up iteration parameters
-casedef.iteration.maxniter = 1000;
-casedef.iteration.UTol     = 1.e-10;
+casedef.iteration.maxniter = 500;
+casedef.iteration.resTol     = 1.e-3;
 casedef.iteration.dt = 20;
+% relaxation factor
+casedef.relaxation = 0.1;
 
 % Call solver
+tic
 result = SIMPLEsolver(casedef);
+fprintf("Time: %.3f \n",toc)
 
 % Plot result
 % ux
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Ux"); colorbar();
-% fvmplotfield(result.U,scale,lw, 1);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Uy"); colorbar();
-% fvmplotfield(result.U,scale,lw, 2);
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("Ux"); colorbar();
+fvmplotfield(result.U,scale,lw, 1);
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("Uy"); colorbar();
+fvmplotfield(result.U,scale,lw, 2);
 
 

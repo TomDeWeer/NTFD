@@ -47,7 +47,8 @@ while iterate
     vRes = bv-Av*v;
     UResnorm = norm([uRes;vRes]); 
     fprintf("It %d : residual norm =  %.12f \n",niter, UResnorm)
-    if UResnorm < casedef.iteration.UTol
+    if UResnorm < casedef.iteration.UTol && deltaU<casedef.iteration.UTol &&...
+            deltaV < casedef.iteration.UTol
         Uconverged = true;
         iterate = false;
         disp("Convergence achieved")
@@ -63,6 +64,11 @@ while iterate
         unew = Ru\Cu;
         [Cv,Rv] = qr(Av,bv);
         vnew = Rv\Cv;
+        deltaU = norm(unew-u);
+        deltaV = norm(vnew-v);
+        % second convergence check
+        fprintf("delta u: %.12f \n",deltaU);
+        fprintf("delta v: %.12f \n",deltaV);
         Unew = [unew, vnew];
         set(casedef.U,Unew'); % Put algebraic solution in the Field
     end

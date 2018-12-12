@@ -8,7 +8,7 @@ dom = casedef.dom;
     % matrix.
     function equationToMatrix(diagIndex,offdiagIndex,diagTerm,offdiagTerm)
         Adiag(diagIndex) = Adiag(diagIndex) + diagTerm;    % Diagonal
-        Aoffdiag(offdiagIndex) = offdiagTerm;   % Off-diagonal
+        Aoffdiag(offdiagIndex) = Aoffdiag(offdiagIndex)+offdiagTerm;   % Off-diagonal
     end
 
 nC = dom.nC;

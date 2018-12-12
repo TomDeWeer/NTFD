@@ -10,7 +10,7 @@ function [anb,firstConvTerm,secondConvTerm] ...
 dom = casedef.dom;
 U = casedef.U0;
 
-% Determining the indeces of the neighbouring cells
+% Determining the indices of the neighbouring cells
 [firstNbC,secondNbC] = getCells(dom,faceIndex);
 lambda = getLambda(dom,faceIndex);
 % Calculating diffusion terms of the equations

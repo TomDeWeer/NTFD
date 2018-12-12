@@ -3,42 +3,28 @@ function [Pcorr] = pressureCorrSolver(casedef, uP, vP)
 %   Detailed explanation goes here
 
 dom = casedef.dom;
-u = casedef.U.data(1,:);
-v = casedef.U.data(2,:);
 
 Pcorr = Field(dom.allCells,0);	% Pressure [Pa] (scalar); empty field
 set(Pcorr,zeros(1,dom.nC));
 
-% Create an equation object for holding a scalar conservation equation
-eqnPcorr = ScalarFvEqn2(dom);
-
-F = zeros(dom.nC,1);
 A = sparse(double(dom.nC),double(dom.nC)) ; % contains pressure correction equations(1 for every pressure, even ghostcells)
+
+F = faceFluxes(casedef);      % Without Rie-Chow
+% F = faceFluxesRC(casedef, uP, vP);  % With Rie-Chow
 
 % Creating pressure corrections equations in internal cells:
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);
-    Af = dom.fArea(i);
     lambda = getLambda(dom,i);
     n = dom.fNormal(:,i);
-    Uf = [lambda*u(firstCell) + (1-lambda)*u(secondCell); ...
-        lambda*v(firstCell) + (1-lambda)*v(secondCell)];
-    outwardFlux = Af*Uf'*n;
-    F(firstCell) = F(firstCell) + outwardFlux;
-    F(secondCell) = F(secondCell) - outwardFlux;
+    theta = atan2(n(2),n(1));
+    %%%%% TODO: TOM SNAPT DIT NIET (Koen eigenlijk ook niet) %%%%%
     if secondCell <= dom.nPc
-        if n'*[1; 0]>0.5 % face in u richting
-            af = (uP(firstCell) + uP(secondCell))/2;
-        else
-            af = (vP(firstCell) + vP(secondCell))/2;
-        end
+        af = sqrt(cos(theta)^2*(lambda*uP(firstCell) + (1-lambda)*uP(secondCell))^2 ...
+            + sin(theta)^2*(lambda*vP(firstCell) + (1-lambda)*vP(secondCell))^2);
     else %nu heb je geen tweede vergelijking
-        if n'*[1; 0]>0.5 % face in u richting
-            af = uP(firstCell); % VRAGEN OF WE MOGEN EXTRAPOLEREN
-        else
-            af = vP(firstCell);
-        end
+        af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
     end
     % op randfaces heb je niet langs beide kanten een momentumvgl -> pak
     % alleen die van internal cell
@@ -48,8 +34,9 @@ for i= 1:dom.nIf+dom.nBf
         A(secondCell,secondCell) = A(secondCell, secondCell) + af; % equation for secondCell
         A(secondCell,firstCell) = A(secondCell, firstCell) - af; % equation for secondCell
     end
-    
 end
+
+
 % add pressure correction boundary conditions
 for faceIndex= dom.nIf+1:dom.nF
     [physicalCell,ghostCell] = getCells(dom,faceIndex);

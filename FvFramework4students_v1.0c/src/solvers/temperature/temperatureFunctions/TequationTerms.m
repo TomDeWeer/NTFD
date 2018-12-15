@@ -1,5 +1,5 @@
 function [anb,firstConvTerm,secondConvTerm] ...
-    = tEquationTerms( casedef, faceIndex )
+    = TequationTerms( casedef, faceIndex )
 %EQUATIONTERMS - Gives the equation terms for a given face.
 %Function to determine the terms of the internal convection-diffusion
 %equations. 'anb' is the diffusive term. 'firstConvTerm' ('secondConvTerm')

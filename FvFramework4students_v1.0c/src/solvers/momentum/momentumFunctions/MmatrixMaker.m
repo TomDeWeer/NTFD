@@ -45,7 +45,7 @@ end
 % Compute coefficients for physical cell eqns and add them to eqn object
 for i= 1:nIf+nBf
     % Getting terms of the equations
-    [viscTerm,firstConvTerm,secondConvTerm] = mEquationTerms(casedef,i);
+    [viscTerm,firstConvTerm,secondConvTerm] = MequationTerms(casedef,i);
     [firstCell,secondCell] = getCells(dom,i);
     % First cell
     firstDiag = viscTerm + firstConvTerm;
@@ -61,7 +61,7 @@ for i= 1:nIf+nBf
         equationToVMatrix(secondCell,2*i,secondDiag,secondOffdiag);
     else % If it's a ghost cell
         [ughostDiag, ughostOffdiag, ubValue, vghostDiag, vghostOffdiag, vbValue] ...
-            = mGhostTerms(casedef,i);
+            = MghostTerms(casedef,i);
         equationToUMatrix(secondCell,2*i,ughostDiag,ughostOffdiag);
         equationToVMatrix(secondCell,2*i,vghostDiag,vghostOffdiag);
         bu(secondCell,:) = ubValue;

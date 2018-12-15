@@ -1,5 +1,5 @@
 function [ ghostDiag, ghostOffdiag, bValue ] ...
-    = tGhostTerms( casedef, faceIndex )
+    = TghostTerms( casedef, faceIndex )
 %GHOSTTERMS Gives the matrix elements for the boundary conditions.
 
 dom = casedef.dom;

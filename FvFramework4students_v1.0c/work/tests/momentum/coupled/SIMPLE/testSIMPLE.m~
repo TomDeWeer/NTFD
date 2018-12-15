@@ -21,12 +21,6 @@ mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
 casedef.dom = newdomain(mesh,'MyDomain');
 
-
-% % actual solution
-% pfunc = @(x,y) p0 + dPdx*(-cos(theta)*x+sin(theta)*y);
-% ufunc = @(x,y) (-dPdx/(2*mu))*(cos(theta)*x+sin(theta)*y)*(Ly-(cos(theta)*x+sin(theta)*y))+Uxtop*(cos(theta)*x+sin(theta)*y)/Ly;
-% vfunc = @(x,y) 0;
-
 % Set up initial fields
 U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
 set(U,[ones(1,U.elcountzone);ones(1,U.elcountzone)]);
@@ -37,9 +31,8 @@ for i=1:casedef.dom.nC
     coord = casedef.dom.cCoord(:,i);
     x = coord(1);
     y = coord(2);
-%     P0 = [P0, pfunc(x,y)];
-%     P0 = [P0, pfunc(x,y) + sin(pi*x/dx )];
-    P0 = [P0, 0];
+    P0 = [P0, p0 + dPdx*x + sin(pi*x/dx )];
+%     P0 = [P0, 0];
 end
 set(P,P0)
 casedef.P = P;
@@ -69,6 +62,11 @@ casedef.material.nu = nu;  % viscosity [dynamic???]
 casedef.material.rho = rho; % density [kg/m^3]
 
 
+% actual solution
+pfunc = @(x,y) p0 + dPdx*sqrt(x^2+y^2);
+ufunc = @(x,y) (-dPdx/(2*mu))*y*(Ly-y)+Uxtop*y/Ly;
+vfunc = @(x,y) 0;
+
 % Define boundary conditions
 % There are boundary conditions for velocity and for pressure
 % Wall: dirichlet velocity and neumann pressure in n
@@ -79,17 +77,17 @@ jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'WESTRAND';
 % casedef.BC{jBC}.kind   = 'Dirichlet';
 % casedef.BC{jBC}.data.bcval = @(x,y) [y*(1-y), 0];
-casedef.BC{jBC}.velocityKind   = 'Neumann';
-casedef.BC{jBC}.data.velocity = @(x,y) [0 , 0]; % uniform velocity inlet
+casedef.BC{jBC}.velocityKind   = 'Dirichlet';
+casedef.BC{jBC}.data.velocity = @(x,y) [ufunc(x,y) , vfunc(x,y)]; % uniform velocity inlet
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = 5; % prescribed pressure
+casedef.BC{jBC}.data.pressure = pfunc; % prescribed pressure
 casedef.BC{jBC}.isNormalized = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'OOSTRAND';
 casedef.BC{jBC}.velocityKind   = 'Neumann';
 casedef.BC{jBC}.data.velocity = [0, 0]; % developed velocity outlet, nonchanging
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = 0; % prescribed pressure
+casedef.BC{jBC}.data.pressure = pfunc; % prescribed pressure
 casedef.BC{jBC}.isNormalized = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'ZUIDRAND';
@@ -109,7 +107,7 @@ casedef.BC{jBC}.isNormalized = 0;
 
 % Set up iteration parameters
 casedef.iteration.maxniter = 150;
-casedef.iteration.resTol     = 1.e-3;
+casedef.iteration.resTol     = 1.e-4;
 casedef.iteration.dt = 20;
 % relaxation factor
 casedef.relaxation = 0.1;

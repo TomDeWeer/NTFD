@@ -2,16 +2,16 @@
 % at the top, isolated sides and grounded temperature at bottom
 clear; close all; clc;
 
-path = [pwd '\Figuren\Diffusion'];
+path = [pwd '/Figuren/Diffusion'];
 [~, ~, ~] = mkdir(path);
 
-H = 1;
+H = 2;
 L = 1;
 
 K = 0.01;
-Nx = 50*L;
+Nx = 20*L;
 dx = L/Nx;
-Ny = 50*H;
+Ny = 20*H;
 dy = H/Ny;
 % Create a mesh
 seedI = LineSeed.lineSeedOneWayBias([0 0],[L 0],Nx,0.95,'o');
@@ -55,6 +55,8 @@ jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'NOORDRAND';
 casedef.BC{jBC}.kind   = 'Neumann';
 casedef.BC{jBC}.data.bcval = @(x,y) sin(pi*x/L); 
+%casedef.BC{jBC}.data.bcval = @(x,y) 1; 
+%casedef.BC{jBC}.data.bcval = @(x,y) x*(L-x); 
 % de flux die door deze wand 
 % naar binnen stroomt is 1W/m
 
@@ -79,12 +81,15 @@ saveas(gcf,fullfile(path,'Numerical_results.png'));
 
 % Verifying accuracy
 % analytic solution: eigenfunction
-An = @(n) 8*n/(K*(1-n^2)*(2*pi*n+1));
+%An = @(n) 8*n/(K*(1-n^2)*(2*pi*n+1));
+An = @(n) 4/(pi*K*(1-(n^2)));
 A0 = 2*L/(pi*K);
+% An = @(n) 2*sin(n*pi)/(K*n*pi);
+% A0 = L/K;
+% An = @(n) -4*(L^2)/(pi^2 * n^2 * K);
+% A0 = L^3 / (6*K);
 Tn = @(x,y,n) cos(n*pi*x/L).*sinh(n*pi*y/L)*An(n)*(L/(n*pi*cosh(n*pi*H/L)));
-[X,Y] = meshgrid(0:dx:L-dx,0:dy:H-dy);
-X = X+dx/2;
-Y = Y+dy/2;
+[X,Y] = meshgrid(dx/2:dx:L-dx/2,dy/2:dy:H-dy/2);
 T = zeros(size(X));
 T = T+A0*Y;
 for n = 2:2:110
@@ -156,8 +161,11 @@ set(gca,'TickLabelInterpreter', 'latex');
 saveas(gcf,fullfile(path,'Eigenfunction_size.png'));
 
 %% Test convergentie
-error = zeros(1,23);
-for number=6:2:50
+
+gridsizes = [2, 4, 8, 16, 32, 64, 128, 256 ,512];
+error = [];
+for number=gridsizes
+    disp(number)
     Nx = number*L;
     dx = L/Nx;
     Ny = number*H;
@@ -245,12 +253,12 @@ for number=6:2:50
     end
     avgErr = avgErr/Ni;
     
-    error(number/2-2) = avgErr;
+    error = [error, avgErr];
 end
 
 figure()
-semilogy(6:2:50, error)
-xlabel('n [-]','Interpreter','latex');
+loglog(gridsizes, error, 'kx')
+xlabel('N [-]','Interpreter','latex');
 ylabel('Error [K]','Interpreter','latex');
 set(gca,'TickLabelInterpreter', 'latex');
 saveas(gcf,fullfile(path,'Error_convergence.png'));

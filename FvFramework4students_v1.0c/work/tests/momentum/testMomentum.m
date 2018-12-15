@@ -3,8 +3,8 @@ clear all; close all;
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 20;
-Ny = 20;
+Nx = 100;
+Ny = 100;
 dPdx = -10;
 Uxtop = 2; % m/s
 mu = 4;

@@ -2,7 +2,7 @@
 % from left to right
 clear all; close all;
 % Create a mesh
-Nx = 640;
+Nx = 150;
 dx = 1/Nx;
 L = 1;
 V = 100;
@@ -10,7 +10,7 @@ D = 10;
 Pe = L*V/D;
 fprintf("Peclet number: %.5f \n",Pe);
 seedI = LineSeed.lineSeedOneWayBias([0 0],[L 0],Nx,1.00,'o');
-seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 1],4,1.00,'o');
+seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 1],1,1.00,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
 mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
@@ -31,6 +31,7 @@ casedef.U0 = U;
 % Define material properties
 casedef.material.k = D;  % Thermal conductivity [W/(m K)]
 
+path = [pwd '/Figuren/Convection'];
 
 % Define boundary conditions
 jBC = 0;
@@ -62,33 +63,37 @@ result = temperaturesolver(casedef);
 
 
 % Plot result
-figure; hold on; axis off; axis equal; colormap(jet(50));
-scale = 'lin'; lw = 1;
+figure; hold on; axis image; colormap(jet(50));
+scale = 'lin'; lw = 0.0;
 fvmplotfield(result.T,scale,lw);
+xlabel('x [m]','Interpreter','latex');
+ylabel('y [m]','Interpreter','latex');
+colorbar('TickLabelInterpreter', 'latex');
+saveas(gcf,fullfile(path,'Numerical_results.png'));
 
-% Verifying accuracy
-% Getting the temperatures at the horizontal line x=0 to x=1, at y=0.125
+% % Verifying accuracy
+% % Getting the temperatures at the horizontal line x=0 to x=1
 line = zeros(10,1); % contains temperatures at horizontal line
 linexloc = zeros(10,1); % contains  x-coord at horizontal line
 for i=1:result.T.dom.nC
     x = result.T.dom.cCoord(1,i);
     y = result.T.dom.cCoord(2,i);
-    if y < 0.126 && y>0.124 && x>0 && x<1 % select if its at y=0.125
+    if x>0 && x<1 
         ix = round((x+(dx*0.5))/dx);
         line(ix) = result.T.data(i);
         linexloc(ix) = x;
     end
 end
 % calculate real velocity profile
-figure()
-plot(line, linexloc,'b')
+% figure()
+% plot(line, linexloc,'b')
 hold on
 realTempF = @(x) 1-((exp(Pe*x)-1)/(exp(Pe)-1));
 realLine = zeros(size(line));
 for i=1:length(line)
     realLine(i) = realTempF(linexloc(i));
 end
-%plot(realLine, linexloc,'r')
+% plot(realLine, linexloc,'r')
 avgErr = mean(abs(realLine-line));
 maxErr = max(abs(realLine-line));
 fprintf("Maximum flow profile error: %.10f \n",maxErr)
@@ -102,4 +107,9 @@ figure()
 loglog(Nxs,MaximumErrors, "x")
 xlabel("Nx")
 ylabel("max error")
+Ni = [5, 10, 20, 40, 80, 160, 320, 640];
+for N=Ni
+    
+    
+end
 

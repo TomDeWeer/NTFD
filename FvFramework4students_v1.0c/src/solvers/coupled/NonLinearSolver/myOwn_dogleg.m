@@ -48,11 +48,16 @@ else
     % DEES WAS DUS ECHT SLECHTE CODE
     % Disable the warnings about conditioning for singular and
     % nearly singular matrices
-
+    warningstate1 = warning('off','MATLAB:nearlySingularMatrix');
+    warningstate2 = warning('off','MATLAB:singularMatrix');
+    warningstate3 = warning('off','MATLAB:rankDeficientMatrix');
     % dNewton = -JAC\F; 
-    dNewton = (JAC'*JAC)\(-JAC'*F); % voila se, vele beter
+    dNewton = (JAC'*JAC+sparse(1.e-5*eye(size(JAC))))\(-JAC'*F); % voila se, vele beter
     % Restore the warning states to their original settings
-
+    
+    warning(warningstate1)
+    warning(warningstate2)
+    warning(warningstate3)
     
     dNewton = dNewton.*scalMat;     % scale the step
     

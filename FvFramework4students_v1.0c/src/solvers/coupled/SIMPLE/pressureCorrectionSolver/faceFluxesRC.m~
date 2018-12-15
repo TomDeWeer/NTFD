@@ -23,18 +23,7 @@ for faceindex=1:dom.nF
         gradP(:,secondCell) = gradP(:,firstCell);
     end
 end
-% gradPfield = Field(casedef.dom.allCells,1);
-% set(gradPfield,gradP);
-% casedef.gradP = gradPfield;
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("P"); colorbar();
-% fvmplotfield(casedef.P,scale,lw);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("gradPx"); colorbar();
-% fvmplotfield(casedef.gradP,scale,lw,1);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("gradPy"); colorbar();
-% fvmplotfield(casedef.gradP,scale,lw,2);
+
 F = zeros(dom.nC,1);
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
@@ -58,11 +47,8 @@ for i= 1:dom.nIf+dom.nBf
     directDP = (P(secondCell)-P(firstCell))/ksi;
     interpolatedDP = (lambda*gradP(:,firstCell) + (1-lambda)*gradP(:,secondCell))'*n;
     RCcorrection = -(directDP - interpolatedDP)/af;
-%     if n(1)>0 && i ==1
-%         disp(directDP-interpolatedDP)
-%     end
-    F(firstCell) = F(firstCell) + outwardFlux - Af*RCcorrection;
-    F(secondCell) = F(secondCell) - outwardFlux + Af*RCcorrection; % kijk hier een uur na of je gewoon min mag doen
+    F(firstCell) = F(firstCell) + outwardFlux + Af*omega1*RCcorrection;
+    F(secondCell) = F(secondCell) - outwardFlux - Af*omega2*RCcorrection; % kijk hier een uur na of je gewoon min mag doen
 end
 
 end

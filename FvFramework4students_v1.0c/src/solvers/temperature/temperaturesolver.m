@@ -28,7 +28,7 @@ while iterate
     % Set all terms to zero
     reset(eqn); 
     
-    [A,b] = tMatrixMaker(casedef);
+    [A,b] = TmatrixMaker(casedef);
     
     eqn.adata = A;
     eqn.bdata = b;

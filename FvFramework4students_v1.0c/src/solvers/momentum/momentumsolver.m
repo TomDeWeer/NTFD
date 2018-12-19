@@ -30,7 +30,7 @@ while iterate
     reset(eqnU); 
     reset(eqnV); 
     
-    [Au, bu, Av, bv] = mMatrixMaker(casedef);
+    [Au, bu, Av, bv] = MmatrixMaker(casedef);
     
     % Create a matlab sparse linear system from the eqn object
     eqnU.adata = Au;

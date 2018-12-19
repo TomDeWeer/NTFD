@@ -1,4 +1,4 @@
-function [ A, b ] = tMatrixMaker( casedef )
+function [ A, b ] = TmatrixMaker( casedef )
 %MATRIXMAKER Returns the sparse matrix in vector form.
 %   Detailed explanation goes here
 
@@ -20,7 +20,7 @@ b = zeros(nC,1);
 % Compute coefficients for physical cell eqns and add them to eqn object
 for i= 1:nIf+nBf
     % Getting terms of the equations
-    [anb,firstConvTerm,secondConvTerm] = tEquationTerms(casedef,i);
+    [anb,firstConvTerm,secondConvTerm] = TequationTerms(casedef,i);
     [firstCell,secondCell] = getCells(dom,i);
     % First cell
     firstDiag = anb + firstConvTerm;
@@ -33,7 +33,7 @@ for i= 1:nIf+nBf
         secondOffdiag = - anb - firstConvTerm;
     else % If it's a ghost cell
         [secondDiag,secondOffdiag,bValue] ...
-            = tGhostTerms(casedef,i);
+            = TghostTerms(casedef,i);
         b(secondCell) = bValue;
     end
     % Filling in the offdiagonal elements

@@ -4,7 +4,7 @@ function [F] = faceFluxes(casedef)
 dom = casedef.dom;
 u = casedef.U.data(1,:);
 v = casedef.U.data(2,:);
-F = zeros(dom.nC);
+F = zeros(dom.nC,1);
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);

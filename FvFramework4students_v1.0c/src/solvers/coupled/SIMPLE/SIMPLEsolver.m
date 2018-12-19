@@ -62,7 +62,8 @@ result.niter = niter;
 result.resnorm = resnorm;
 result.U = Field(dom.allCells,1);
 set(result.U,casedef.U.data);
-
+result.P = Field(dom.allCells,0);
+set(result.P, casedef.P.data)
 
 end
 

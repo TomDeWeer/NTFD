@@ -9,25 +9,39 @@ v = casedef.U.data(2,:);
 gradP = zeros(2,dom.nC);
 for faceindex=1:dom.nF
     [firstCell,secondCell] = getCells(dom,faceindex);
-    omega = dom.fVolume(faceindex); % of zoiets
+    omega1 = dom.cVol(firstCell); 
+    omega2 = dom.cVol(secondCell); 
     Af = dom.fArea(faceindex);
     n = dom.fNormal(:,faceindex);
     lambda = getLambda(dom,faceindex);
-    RCterm =  n*Af*(lambda*P(firstCell)+(1-lambda)*P(secondCell))/omega;
-    gradP(:,firstCell) = gradP(:,firstCell) + RCterm;
+    RCterm =  n*Af*(lambda*P(firstCell)+(1-lambda)*P(secondCell));
+    gradP(:,firstCell) = gradP(:,firstCell) + RCterm/omega1;
     %%%% Iets deftigs voor gradP in ghostcells
     if secondCell <= dom.nPc
-        gradP(:,secondCell) = gradP(:,secondCell) - RCterm;
+        gradP(:,secondCell) = gradP(:,secondCell) - RCterm/omega2;
     else %nu heb je geen tweede vergelijking
-        gradP(:,secondCell) = -gradP(:,firstCell);
+        gradP(:,secondCell) = gradP(:,firstCell);
     end
 end
-
+% gradPfield = Field(casedef.dom.allCells,1);
+% set(gradPfield,gradP);
+% casedef.gradP = gradPfield;
+% figure; hold on; axis off; axis equal; colormap(jet(50));
+% scale = 'lin'; lw = 1; title("P"); colorbar();
+% fvmplotfield(casedef.P,scale,lw);
+% figure; hold on; axis off; axis equal; colormap(jet(50));
+% scale = 'lin'; lw = 1; title("gradPx"); colorbar();
+% fvmplotfield(casedef.gradP,scale,lw,1);
+% figure; hold on; axis off; axis equal; colormap(jet(50));
+% scale = 'lin'; lw = 1; title("gradPy"); colorbar();
+% fvmplotfield(casedef.gradP,scale,lw,2);
 F = zeros(dom.nC,1);
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);
     Af = dom.fArea(i);
+    omega1 = dom.cVol(firstCell); 
+    omega2 = dom.cVol(secondCell); 
     n = dom.fNormal(:,i);
     theta = atan2(n(2),n(1));
     if secondCell <= dom.nPc
@@ -42,10 +56,13 @@ for i= 1:dom.nIf+dom.nBf
     outwardFlux = Af*Uf'*n;
     ksi = dom.fXiMag(faceindex);
     directDP = (P(secondCell)-P(firstCell))/ksi;
-    interpolatedDP = lambda*gradP(firstCell) + (1-lambda)*gradP(secondCell);
-    RCcorrection = -cellVolume*(directDP - interpolatedDP)/af;
-    F(firstCell) = F(firstCell) + outwardFlux + RCcorrection;
-    F(secondCell) = F(secondCell) - outwardFlux - RCcorrection; % kijk hier een uur na of je gewoon min mag doen
+    interpolatedDP = (lambda*gradP(:,firstCell) + (1-lambda)*gradP(:,secondCell))'*n;
+    RCcorrection = -(directDP - interpolatedDP)/af;
+%     if n(1)>0 && i ==1
+%         disp(directDP-interpolatedDP)
+%     end
+    F(firstCell) = F(firstCell) + outwardFlux - Af*RCcorrection;
+    F(secondCell) = F(secondCell) - outwardFlux + Af*RCcorrection; % kijk hier een uur na of je gewoon min mag doen
 end
 
 end

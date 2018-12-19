@@ -13,7 +13,7 @@ Nv = length(v);
 
 %% Continuity equations: 
 CE = zeros(dom.nPc,1); % contains residuals of equations (1 eq for every cell)
-JCE = zeros(dom.nPc,Np+Nu+Nv); % J(i,j) is the partial derivative of continuity 
+JCE = sparse(double(dom.nPc),double(Np+Nu+Nv)); % J(i,j) is the partial derivative of continuity 
 %equation in cell i with respect to x(j)(x = u, v or p)
 for i=1:dom.nF
     Af = dom.fArea(i);
@@ -43,7 +43,7 @@ end
 %% Navier Stokes equations
 CNS = zeros(2*dom.nPc,1); % contains residuals for Navier Stokes equations(2 for every physical cell)
 % equations are ordered as follows: CNS = [firstcell_u, firstCell_v, secondCell_u, secondCell_v, ...]
-JNS = zeros(2*dom.nPc, Np+Nu+Nv); % J(i,j) is the partial derivative of NS 
+JNS = sparse(double(2*dom.nPc), double(Np+Nu+Nv)); % J(i,j) is the partial derivative of NS 
 %equation i with respect to x(j)(x = u, v or p)
 rho = casedef.material.rho;
 % first term: del dot u u 
@@ -183,7 +183,7 @@ end
 
 %% Boundary equations
 BCE = []; % boundary condition equations
-JBCE = []; % jacobian of BCE
+JBCE = sparse([]); % jacobian of BCE
 % looping over external faces
 for i=dom.nIf+1:dom.nF
     [PC,GC] = getCells(dom,i);
@@ -204,7 +204,7 @@ for i=dom.nIf+1:dom.nF
     % Checking which BC applies at that boundary
     % Pressure
     BCp = casedef.BC{id}.pressureKind;
-    JBCEi = zeros(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
+    JBCEi = sparse(double(Np+Nu+Nv),1);% one BCE equation gradient(must be transposed for JBCE)
     switch BCp
         case 'Dirichlet'
             % Determining lambda using the anonymous function
@@ -226,7 +226,7 @@ for i=dom.nIf+1:dom.nF
                 fixedPressureGradient = fixedPressureGradient(pos(1),pos(2));
             end
             % Check normalization
-            JBCEi = zeros(Np+Nu+Nv,1);
+            JBCEi = sparse(double(Np+Nu+Nv),1);
             if casedef.BC{id}.isNormalized && i == range(1)
                 % apply zero dirichlet BC
                 BCE = [BCE; fixedPressureGradient+pPC/(ksi)];
@@ -255,12 +255,12 @@ for i=dom.nIf+1:dom.nF
             end
             fixedU = fixedVelocity(1); fixedV = fixedVelocity(2);
             BCE = [BCE; lambda*uPC + (1-lambda)*uGC - fixedU];
-            JBCEi = zeros(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
+            JBCEi = sparse(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
             JBCEi(Np+PC) = lambda;
             JBCEi(Np+GC) = (1-lambda);
             JBCE = [JBCE; JBCEi'];
             BCE = [BCE; lambda*vPC + (1-lambda)*vGC - fixedV];
-            JBCEi = zeros(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
+            JBCEi = sparse(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
             JBCEi(Np+Nu+PC) = lambda;
             JBCEi(Np+Nu+GC) = (1-lambda);
             JBCE = [JBCE; JBCEi'];
@@ -268,18 +268,18 @@ for i=dom.nIf+1:dom.nF
             ksi = dom.fXiMag(i);
             fixedVelocityGradient = casedef.BC{id}.data.velocity;
             if isa(fixedVelocityGradient, 'function_handle')
-                pos = dom.fCoord(:,faceIndex);
+                pos = dom.fCoord(:,i);
                 fixedVelocityGradient = fixedVelocityGradient(pos(1),pos(2));
             end
             fixedUGradient = fixedVelocityGradient(1);
             fixedVGradient = fixedVelocityGradient(2);
             BCE = [BCE; fixedUGradient-(uGC-uPC)/(ksi)];
-            JBCEi = zeros(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
+            JBCEi = sparse(double(Np+Nu+Nv),1);% one BCE equation gradient(must be transposed for JBCE)
             JBCEi(Np+PC) = 1/ksi;
             JBCEi(Np+GC) = -1/ksi;
             JBCE = [JBCE; JBCEi'];
             BCE = [BCE; fixedVGradient-(vGC-vPC)/(ksi)];
-            JBCEi = zeros(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
+            JBCEi = sparse(Np+Nu+Nv,1);% one BCE equation gradient(must be transposed for JBCE)
             JBCEi(Np+Nu+PC) = 1/ksi;
             JBCEi(Np+Nu+GC) = -1/ksi;
             JBCE = [JBCE; JBCEi'];

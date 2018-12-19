@@ -18,12 +18,14 @@ dom = casedef.dom;
 % 
 % x0 = [p; u; v];
 x0 = zeros(3*dom.nC,1);
-outputFunc = @(x,optimVals,state) plotFlow(x,casedef, optimVals);
+%outputFunc = @(x,optimVals,state) plotFlow(x,casedef, optimVals);
 options = optimoptions('fsolve','Display','iter-detailed',...
-    'OutputFcn',outputFunc,'SpecifyObjectiveGradient',true, ...
-    'FiniteDifferenceStepSize', 1.e-5, 'FunctionTolerance',1.e-3, 'Algorithm','trust-region-dogleg'); % "CheckGradients",true,
+    'SpecifyObjectiveGradient',true, ...
+    'FiniteDifferenceStepSize', 1.e-5, 'FunctionTolerance',casedef.iteration.restol, 'Algorithm','trust-region-dogleg'); %"CheckGradients",true); % 'OutputFcn',outputFunc,
 handle = @(x) NavierStokes(casedef, x);
 tic
-sol = myOwn_fsolve(handle,x0,options);
-fprintf("Time: %.3f \n",toc)
+[sol, fval, exitflag, output] = myOwn_fsolve(handle,x0,options);
+output.time = toc;
+plotFlowFinal(sol,casedef,output)
+
 end

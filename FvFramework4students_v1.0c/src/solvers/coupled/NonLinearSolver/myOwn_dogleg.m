@@ -1,5 +1,5 @@
-function [step,quadObj,normStep,normStepScal] = ...
-    myOwn_dogleg(nvar,F,JAC,grad,Delta,scalMat,varargin)
+function [step,quadObj,normStep,normStepScal, normdNewton] = ...
+    myOwn_dogleg(nvar,F,JAC,grad,Delta,scalMat,reg)
 %DOGLEG approximately solves trust region subproblem via a dogleg approach.
 %
 %   DOGLEG finds an approximate solution d to the problem:
@@ -19,7 +19,7 @@ function [step,quadObj,normStep,normStepScal] = ...
 gradscal = grad./scalMat;
 gradscal2 = gradscal./scalMat;
 normgradscal = norm(gradscal);
-
+normdNewton = 0;
 if normgradscal >= eps
     % First compute the Cauchy step (in scaled space).
     dCauchy = -(Delta/normgradscal)*gradscal;
@@ -48,11 +48,48 @@ else
     % DEES WAS DUS ECHT SLECHTE CODE
     % Disable the warnings about conditioning for singular and
     % nearly singular matrices
-
+%     warningstate1 = warning('off','MATLAB:nearlySingularMatrix');
+%     warningstate2 = warning('off','MATLAB:singularMatrix');
+%     warningstate3 = warning('off','MATLAB:rankDeficientMatrix');
     % dNewton = -JAC\F; 
-    dNewton = (JAC'*JAC)\(-JAC'*F); % voila se, vele beter
+    A = JAC'*JAC + sparse(reg*speye(size(JAC)));
+    b = -JAC'*F;
+%     A = JAC;
+%     b = -F;
+    % preconditioning
+%     setup.type = 'nofill';
+%     [L,U] = ilu(JAC'*JAC,setup);
+%     %Minv = inv(U)*inv(L);
+%     Aprec = sparse(size(A,1), size(A,2));
+%     for colindex=1:size(A,2)
+%         col = A(:,colindex);
+%         Aprec(:,colindex) = U\(sparse(L\col));
+%     end
+%     bprec = U\(L\b);
+%     dNewton = (Aprec)\(bprec);
+%     tol = 1e-5;
+%     maxit = 1000;
+%     restart = [];
+%     setup.type = 'ilutp';
+%     setup.udiag = 1;
+%     setup.droptol = 1.e-2;
+    %[L,U] = ilu(A,setup);
+    % dNewton = gmres(A,b,restart,tol,maxit, A');
+    dNewton = A\b; % voila se, vele beter
     % Restore the warning states to their original settings
+    
+    normdNewton = norm(dNewton);
+%     fprintf("Estimated condition of Jacobian: %.3e \n",condest(JAC))
+%     fprintf("Estimated condition of LS-Jacobian: %.3e \n",condest(A))
+    fprintf("Norm of the step: %.3f \n",normdNewton)
+    fprintf("gmres relative residual norm: %.3f \n",norm(A*dNewton -b)/norm(b))
+    fprintf("Real relative residual norm: %.3f \n",norm(JAC*dNewton + F)/norm(F))
+%     fprintf("Regularization parameter: %.3e \n",reg)
 
+    
+%     warning(warningstate1)
+%     warning(warningstate2)
+%     warning(warningstate3)
     
     dNewton = dNewton.*scalMat;     % scale the step
     

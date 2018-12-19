@@ -20,7 +20,7 @@ for i= 1:dom.nIf+dom.nBf
     n = dom.fNormal(:,i);
     pCorrFace = lambda*Pcorr(firstCell) + (1-lambda)*Pcorr(secondCell);
     rho = casedef.material.rho;
-    pressureCorrForce = -Af*pCorrFace*n/rho;
+    pressureCorrForce = Af*pCorrFace*n/rho;
     % First cell
     u(firstCell) = u(firstCell) + pressureCorrForce(1)/uP(firstCell);
     v(firstCell) = v(firstCell) + pressureCorrForce(2)/vP(firstCell);

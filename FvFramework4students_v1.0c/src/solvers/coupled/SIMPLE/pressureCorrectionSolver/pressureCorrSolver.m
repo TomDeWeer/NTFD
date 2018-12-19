@@ -9,8 +9,8 @@ set(Pcorr,zeros(1,dom.nC));
 
 A = sparse(double(dom.nC),double(dom.nC)) ; % contains pressure correction equations(1 for every pressure, even ghostcells)
 
-% F = faceFluxes(casedef);      % Without Rie-Chow
-F = faceFluxesRC(casedef, uP, vP);  % With Rie-Chow
+F = faceFluxes(casedef);      % Without Rie-Chow
+% F = faceFluxesRC(casedef, uP, vP);  % With Rie-Chow
 
 % Creating pressure corrections equations in internal cells:
 for i= 1:dom.nIf+dom.nBf
@@ -18,21 +18,29 @@ for i= 1:dom.nIf+dom.nBf
     [firstCell,secondCell] = getCells(dom,i);
     lambda = getLambda(dom,i);
     n = dom.fNormal(:,i);
-    theta = atan2(n(2),n(1));
+    Af = dom.fArea(i);
     %%%%% TODO: TOM SNAPT DIT NIET (Koen eigenlijk ook niet) %%%%%
+%     theta = atan2(n(2),n(1));
+%     if secondCell <= dom.nPc
+%         af = sqrt(cos(theta)^2*(lambda*uP(firstCell) + (1-lambda)*uP(secondCell))^2 ...
+%             + sin(theta)^2*(lambda*vP(firstCell) + (1-lambda)*vP(secondCell))^2);
+%     else %nu heb je geen tweede vergelijking
+%         af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
+%     end
     if secondCell <= dom.nPc
-        af = sqrt(cos(theta)^2*(lambda*uP(firstCell) + (1-lambda)*uP(secondCell))^2 ...
-            + sin(theta)^2*(lambda*vP(firstCell) + (1-lambda)*vP(secondCell))^2);
+        af = n'*[(lambda*uP(firstCell) + (1-lambda)*uP(secondCell)); ...
+            (lambda*vP(firstCell) + (1-lambda)*vP(secondCell))];
     else %nu heb je geen tweede vergelijking
-        af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
+        af = n'*[uP(firstCell); vP(firstCell)];
     end
+    df = Af^2/af;
     % op randfaces heb je niet langs beide kanten een momentumvgl -> pak
     % alleen die van internal cell
-    A(firstCell,firstCell) = A(firstCell,firstCell) + af; % equation for firstCell
-    A(firstCell,secondCell) = A(firstCell,secondCell) - af; % equation for firstCell
+    A(firstCell,firstCell) = A(firstCell,firstCell) + df; % equation for firstCell
+    A(firstCell,secondCell) = A(firstCell,secondCell) - df; % equation for firstCell
     if secondCell <= dom.nPc
-        A(secondCell,secondCell) = A(secondCell, secondCell) + af; % equation for secondCell
-        A(secondCell,firstCell) = A(secondCell, firstCell) - af; % equation for secondCell
+        A(secondCell,secondCell) = A(secondCell, secondCell) + df; % equation for secondCell
+        A(secondCell,firstCell) = A(secondCell, firstCell) - df; % equation for secondCell
     end
 end
 
@@ -84,6 +92,13 @@ for faceIndex= dom.nIf+1:dom.nF
 end
 
 Pcorr = A\F;
+PcorrField = Field(dom.allCells,0);
+set(PcorrField, Pcorr')
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("Pcorr"); colorbar();
+fvmplotfield(PcorrField,scale,lw);
+
+
 
 end
 

@@ -1,8 +1,9 @@
 clear all; close all;
 
 % Create a mesh
-for Reynolds = [ 1000, 3200, 5000, 7500, 10000]
-    for N = [ 100]
+for Reynolds = [ 200]
+    for N = [ 150]
+        disp(char("Re="+Reynolds))
         disp(char("N="+N))
         Nx = N;
         Ny = N;
@@ -72,6 +73,7 @@ for Reynolds = [ 1000, 3200, 5000, 7500, 10000]
         casedef.BC{jBC}.isNormalized = 0;
         % Set up iteration parameters
         casedef.iteration.restol     = 1.e-3;
+        casedef.iteration.regularization = 1.e-5;
         coupledNLS(casedef);
             
     end

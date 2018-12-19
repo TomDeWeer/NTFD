@@ -194,13 +194,19 @@ faultTolStruct = createFaultTolStruct(false);
 newFaultTolStruct = faultTolStruct;
 
 % Beginning of main iteration loop.
+reg = 1.e-5;
 while ~done
   iter = iter + 1;
 
   % Compute step, d, using dogleg approach.
-  [d,quadObj,normd,normdscal] = ...
-       myOwn_dogleg(sizes.nVar,Fvec,JAC,grad,Delta,scalMat,varargin);
-
+  
+  [d,quadObj,normd,normdscal, normdNewton] = ...
+       myOwn_dogleg(sizes.nVar,Fvec,JAC,grad,Delta,scalMat,reg);
+  if normdNewton < 10000
+     reg = reg/2;
+  elseif normdNewton > 1.e4
+      reg = reg*1.5;
+  end
   % Compute the model reduction given by d (pred).
   pred = -quadObj;
 

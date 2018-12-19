@@ -28,10 +28,9 @@ for i= 1:dom.nIf+dom.nBf
 %         af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
 %     end
     if secondCell <= dom.nPc
-        af = n'*[(lambda*uP(firstCell) + (1-lambda)*uP(secondCell)); ...
-            (lambda*vP(firstCell) + (1-lambda)*vP(secondCell))];
+        af = lambda*uP(firstCell) + (1-lambda)*uP(secondCell);
     else %nu heb je geen tweede vergelijking
-        af = n'*[uP(firstCell); vP(firstCell)];
+        af = uP(firstCell);
     end
     df = Af^2/af;
     % op randfaces heb je niet langs beide kanten een momentumvgl -> pak
@@ -73,7 +72,7 @@ for faceIndex= dom.nIf+1:dom.nF
             end
             A(ghostCell,ghostCell) = lambda;
             A(ghostCell,physicalCell) = 1-lambda;
-            F(ghostCell) = p_described-lambda*current_physical_p-(1-lambda)*current_ghost_p;
+            F(ghostCell) = -(p_described-lambda*current_physical_p-(1-lambda)*current_ghost_p);
         case 'Neumann'
             ksi = dom.fXiMag(faceIndex);
             dp = casedef.BC{id}.data.pressure;
@@ -85,18 +84,18 @@ for faceIndex= dom.nIf+1:dom.nF
             end
             A(ghostCell,ghostCell) = (1/ksi);
             A(ghostCell,physicalCell) = -(1/ksi);
-            F(ghostCell) = dp_described - (current_ghost_p-current_physical_p)/ksi;
+            F(ghostCell) = -(dp_described - (current_ghost_p-current_physical_p)/ksi);
         otherwise
             disp('BC not found');
     end
 end
 
-Pcorr = A\F;
-PcorrField = Field(dom.allCells,0);
-set(PcorrField, Pcorr')
-figure; hold on; axis off; axis equal; colormap(jet(50));
-scale = 'lin'; lw = 1; title("Pcorr"); colorbar();
-fvmplotfield(PcorrField,scale,lw);
+Pcorr = A\-F;
+% PcorrField = Field(dom.allCells,0);
+% set(PcorrField, Pcorr')
+% figure; hold on; axis off; axis equal; colormap(jet(50));
+% scale = 'lin'; lw = 1; title("Pcorr"); colorbar();
+% fvmplotfield(PcorrField,scale,lw);
 
 
 

@@ -3,8 +3,8 @@ clear all; close all;
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 40;
-Ny = 40;
+Nx = 20;
+Ny = 20;
 mu = 4;
 dPdx = -10;
 Uxtop = 0;
@@ -13,9 +13,8 @@ rho = 10;
 nu = mu/rho;
 dx = Lx/Nx; 
 dy = Ly/Ny;
-theta = pi/4;
-seedI = LineSeed.lineSeedOneWayBias([0 0],[sin(theta)*Lx cos(theta)*Lx],Nx,1.00,'o');
-seedJ = LineSeed.lineSeedOneWayBias([0 0],[-cos(theta)*Ly sin(theta)*Ly],Ny,1.00,'o');
+seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
+seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.00,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
 mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
@@ -23,9 +22,9 @@ casedef.dom = newdomain(mesh,'MyDomain');
 
 
 % % actual solution
-% pfunc = @(x,y) p0 + dPdx*(-cos(theta)*x+sin(theta)*y);
-% ufunc = @(x,y) (-dPdx/(2*mu))*(cos(theta)*x+sin(theta)*y)*(Ly-(cos(theta)*x+sin(theta)*y))+Uxtop*(cos(theta)*x+sin(theta)*y)/Ly;
-% vfunc = @(x,y) 0;
+pfunc = @(x,y) p0 + dPdx*(Lx-x);
+ufunc = @(x,y) (-dPdx/(2*mu))*y*(Ly-y)+Uxtop*y/Ly;
+vfunc = @(x,y) 0;
 
 % Set up initial fields
 U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
@@ -82,14 +81,14 @@ casedef.BC{jBC}.zoneID = 'WESTRAND';
 casedef.BC{jBC}.velocityKind   = 'Neumann';
 casedef.BC{jBC}.data.velocity = @(x,y) [0 , 0]; % uniform velocity inlet
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = 5; % prescribed pressure
+casedef.BC{jBC}.data.pressure = 0; % prescribed pressure
 casedef.BC{jBC}.isNormalized = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'OOSTRAND';
 casedef.BC{jBC}.velocityKind   = 'Neumann';
 casedef.BC{jBC}.data.velocity = [0, 0]; % developed velocity outlet, nonchanging
 casedef.BC{jBC}.pressureKind   = 'Dirichlet';
-casedef.BC{jBC}.data.pressure = 0; % prescribed pressure
+casedef.BC{jBC}.data.pressure = 5; % prescribed pressure
 casedef.BC{jBC}.isNormalized = 0;
 jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'ZUIDRAND';

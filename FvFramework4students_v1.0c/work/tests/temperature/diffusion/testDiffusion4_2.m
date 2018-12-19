@@ -231,7 +231,7 @@ for number=6:2:50
                 Texact = Texact+ Tn(x, y, n);
             end
             % Compute relative error
-            err = abs(Texact-Tapprox)/Texact;
+            err = abs(Texact-Tapprox);
             % Compute average error
             avgErr = avgErr + err;
             Ni = Ni+1;

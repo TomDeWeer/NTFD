@@ -3,7 +3,7 @@
 %
 %
 %==========================================================================
-function sol = coupledNLS(casedef)
+function result = coupledNLS(casedef)
 dom = casedef.dom;
 
 % initialize the optimization vector x
@@ -27,5 +27,11 @@ tic
 [sol, fval, exitflag, output] = myOwn_fsolve(handle,x0,options);
 output.time = toc;
 plotFlowFinal(sol,casedef,output)
-
+[p, u, v] = getPUV(casedef,sol);
+U = Field(casedef.dom.allCells,1);
+set(U, [u' ; v']);
+result.U = U;
+P = Field(casedef.dom.allCells,0);
+set(P, p')
+result.P = P;
 end

@@ -81,9 +81,9 @@ else
     normdNewton = norm(dNewton);
 %     fprintf("Estimated condition of Jacobian: %.3e \n",condest(JAC))
 %     fprintf("Estimated condition of LS-Jacobian: %.3e \n",condest(A))
-    fprintf("Norm of the step: %.3f \n",normdNewton)
-    fprintf("gmres relative residual norm: %.3f \n",norm(A*dNewton -b)/norm(b))
-    fprintf("Real relative residual norm: %.3f \n",norm(JAC*dNewton + F)/norm(F))
+%     fprintf("Norm of dNewton: %.3f \n",normdNewton)
+%     fprintf("gmres relative residual norm: %.3f \n",norm(A*dNewton -b)/norm(b))
+%     fprintf("Real relative residual norm: %.3f \n",norm(JAC*dNewton + F)/norm(F))
 %     fprintf("Regularization parameter: %.3e \n",reg)
 
     

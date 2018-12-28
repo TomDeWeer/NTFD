@@ -39,30 +39,30 @@ F = zeros(dom.nC,1);
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);
+    lambda = getLambda(dom,i);
     Af = dom.fArea(i);
     omega1 = dom.cVol(firstCell); 
     omega2 = dom.cVol(secondCell); 
     n = dom.fNormal(:,i);
     theta = atan2(n(2),n(1));
     if secondCell <= dom.nPc
-        af = sqrt(cos(theta)^2*(lambda*uP(firstCell) + (1-lambda)*uP(secondCell))^2 ...
-            + sin(theta)^2*(lambda*vP(firstCell) + (1-lambda)*vP(secondCell))^2);
+        af = lambda*uP(firstCell) + (1-lambda)*uP(secondCell);
     else %nu heb je geen tweede vergelijking
-        af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
+        af = uP(firstCell);
     end
-    lambda = getLambda(dom,i);
-    Uf = [lambda*u(firstCell) + (1-lambda)*u(secondCell); ...
-        lambda*v(firstCell) + (1-lambda)*v(secondCell)];
-    outwardFlux = Af*Uf'*n;
     ksi = dom.fXiMag(faceindex);
     directDP = (P(secondCell)-P(firstCell))/ksi;
     interpolatedDP = (lambda*gradP(:,firstCell) + (1-lambda)*gradP(:,secondCell))'*n;
     RCcorrection = -(directDP - interpolatedDP)/af;
+    Uf = [lambda*u(firstCell) + (1-lambda)*u(secondCell); ...
+        lambda*v(firstCell) + (1-lambda)*v(secondCell)];
+    outwardFlux1 = Af*(Uf'*n+omega1*RCcorrection);
+    outwardFlux2 = Af*(Uf'*n+omega2*RCcorrection);
 %     if n(1)>0 && i ==1
 %         disp(directDP-interpolatedDP)
 %     end
-    F(firstCell) = F(firstCell) + outwardFlux - Af*RCcorrection;
-    F(secondCell) = F(secondCell) - outwardFlux + Af*RCcorrection; % kijk hier een uur na of je gewoon min mag doen
+    F(firstCell) = F(firstCell) + outwardFlux1;
+    F(secondCell) = F(secondCell) - outwardFlux2; % kijk hier een uur na of je gewoon min mag doen
 end
 
 end

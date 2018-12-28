@@ -4,8 +4,8 @@ path = [pwd '\Figuren\Couette'];
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 100;
-Ny = 100;
+Nx = 20;
+Ny = 20;
 dPdx = -10;
 Uxtop = 2; % m/s
 mu = 4;
@@ -60,7 +60,7 @@ casedef.BC{jBC}.data.bcval = [Uxtop, 0];
 
 % Set up iteration parameters
 casedef.iteration.maxniter = 1000;
-casedef.iteration.UTol     = 1.e-12;
+casedef.iteration.UTol     = 1.e-6;
 casedef.iteration.dt = 100;
 
 % Call solver
@@ -75,7 +75,7 @@ fvmplotfield(result.U,scale,lw, 1);
 xlabel('x [m]','Interpreter','latex');
 ylabel('y [m]','Interpreter','latex');
 colorbar('TickLabelInterpreter', 'latex');
-saveas(gcf,fullfile(path,'Couette_50x50.png'));
+%saveas(gcf,fullfile(path,'Couette_50x50.png'));
 
 
 
@@ -179,7 +179,7 @@ fvmplotfield(Err,scale,lw);
 
 
 % convergence experiment results
-Ns = [2, 4, 8, 16, 32, 64];
+Ns = [2, 4, 8, 16, 32];
 MaximumErrors = [];
 AverageErrors = [];
 for N = Ns
@@ -196,7 +196,7 @@ for N = Ns
     dx = Lx/Nx;
     dy = Ly/Ny;
     seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
-    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.00,'o');
+    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.05,'o');
     casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
     mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
     % Create domain from mesh
@@ -265,7 +265,7 @@ for N = Ns
             Uxexact = realU(y);
             % Compute relative error
             err = abs((Uxexact-Uxapprox));
-            comp_err(i) = err;
+            comp_err(i) = err/abs(Uxexact);
             % Compute average error
             avgErr = avgErr + err;
             Ni = Ni+1;
@@ -297,5 +297,5 @@ xlabel('N [-]','Interpreter','latex');
 ylabel('Error [K]','Interpreter','latex');
 legend('Maximum','Average', 'Interpreter','latex')
 set(gca,'TickLabelInterpreter', 'latex');
-saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
+%saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
 

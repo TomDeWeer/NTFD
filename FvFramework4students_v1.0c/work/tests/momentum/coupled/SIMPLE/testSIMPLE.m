@@ -37,8 +37,8 @@ for i=1:casedef.dom.nC
     x = coord(1);
     y = coord(2);
 %     P0 = [P0, pfunc(x,y)];
-%     P0 = [P0, pfunc(x,y) + sin(pi*x/dx )];
-    P0 = [P0, 0];
+    P0 = [P0, pfunc(x,y) + sin(pi*x/dx )];
+%     P0 = [P0, 0];
 end
 set(P,P0)
 casedef.P = P;

@@ -2,7 +2,7 @@ clear all; close all;
 
 % Create a mesh
 for Reynolds = [ 200]
-    for N = [ 150]
+    for N = [ 50]
         disp(char("Re="+Reynolds))
         disp(char("N="+N))
         Nx = N;

@@ -1,8 +1,11 @@
-clear all; close all;
-
+% compare timings for LDC and NLS
 % Create a mesh
-for Reynolds = [ 1000]
-    for N = [ ]
+Nis = [2, 4, 8, ];
+Res = [ 1, 2, 4];
+for Reynolds = Res
+    iterations = [];
+    times = [];
+    for N = Nis
         disp(char("Re="+Reynolds))
         disp(char("N="+N))
         Nx = N;
@@ -75,10 +78,18 @@ for Reynolds = [ 1000]
         casedef.iteration.FuncTol     = 1.e-8;
         casedef.iteration.OptTol      = 1.e-8;
         casedef.iteration.regularization = 1.e-5;
-        coupledNLS(casedef);
-        
+        result = coupledNLS(casedef);
+        times = [times, result.output.time];
+        iterations = [iterations, result.output.funcCount];
     end
-    
+    figure()
+    plot(Nis, times)
+    figure()
+    plot(Nis, iterations)
+    figure()
+    plot(Nis, times./iterations)
 end
+    
+    
 
 

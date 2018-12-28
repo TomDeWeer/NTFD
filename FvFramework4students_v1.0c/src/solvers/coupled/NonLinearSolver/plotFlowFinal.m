@@ -9,29 +9,32 @@ P =  Field(casedef.dom.allCells,0);
 set(P,p');
 Umag =  Field(casedef.dom.allCells,0); 
 set(Umag,sqrt(u.^2+v.^2)');
+
 outputpath = char("/users/start2015/r0585657/Documents/NTFD/NTFD/FvFramework4students_v1.0c/work/tests/momentum/coupled/NLS/Figures/LDC/"+casedef.name);
+%outputpath = char("C:\Users\Tom\Desktop\Universiteit\2emaster\NTFD\FvFramework4students_v1.0c\FvFramework4students_v1.0c\work\tests\momentum\coupled\NLS\Figures\Channel\"+casedef.name);
 mkdir(outputpath)
 save(char(outputpath+"/output.mat"),'output','x')
+visible = "off";
 plot = 1;
 if plot
-    figure('visible','off'); hold on; axis off; axis equal; colormap(jet(50));
+    figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Ux"); colorbar(); grid off; shading interp;
     fvmplotfield(Ux,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,"Ux.png"))
-    figure('visible','off'); hold on; axis off; axis equal; colormap(jet(50));
+    saveas(gcf,fullfile(outputpath,'Ux.png'))
+    figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Uy"); colorbar(); grid off; shading interp;
     fvmplotfield(Uy,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,"Uy.png"))
-    figure('visible','off'); hold on; axis off; axis equal; colormap(jet(50));
+    saveas(gcf,fullfile(outputpath,'Uy.png'))
+    figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("P"); colorbar(); grid off; shading interp;
     fvmplotfield(P,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,"P.png"));
-    close all;
-    figure('visible','off'); hold on; axis off; axis equal; colormap(jet(50));
+    saveas(gcf,fullfile(outputpath,'P.png'));
+    %close all;
+    figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Umag"); colorbar(); grid off; shading interp;
     fvmplotfield(Umag,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,"Umag.png"));
-    close all;
+    saveas(gcf,fullfile(outputpath,'Umag.png'));
+    %close all;
     
     % plotting streamlines
 %     dom = casedef.dom;

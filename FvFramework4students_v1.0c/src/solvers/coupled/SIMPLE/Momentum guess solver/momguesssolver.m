@@ -27,10 +27,12 @@ Un = casedef.U.data;
 u = Un(1,:)';
 v = Un(2,:)';
 
-[Cu,Ru] = qr(Au,bu);
-unew = Ru\Cu;
-[Cv,Rv] = qr(Av,bv);
-vnew = Rv\Cv;
+% [Cu,Ru] = qr(Au,bu);
+% unew = Ru\Cu;
+% [Cv,Rv] = qr(Av,bv);
+% vnew = Rv\Cv;
+unew = Au\bu;
+vnew = Av\bv;
 Unew = [unew, vnew];
 uP = diag(Au);
 vP = diag(Av);

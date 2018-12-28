@@ -27,13 +27,13 @@ bu = zeros(nC,1);
 bv = zeros(nC,1);
 dt = casedef.iteration.dt;
 % add constant diagonal terms to A
-for i=1:nC
+for i=1:dom.nPc
    Ac = casedef.dom.cVol(i);% cell surface area
    Audiag(i) = Audiag(i) + Ac/dt;
    Avdiag(i) = Avdiag(i) + Ac/dt;
 end
 % add source terms
-for i=1:nC
+for i=1:dom.nPc
    Ac = casedef.dom.cVol(i);% cell surface area
    ui = casedef.U.data(1,i);
    vi = casedef.U.data(2,i);
@@ -66,8 +66,8 @@ for i= 1:nIf+nBf
             = mgGhostTerms(casedef,i);
         equationToUMatrix(secondCell,2*i,ughostDiag,ughostOffdiag);
         equationToVMatrix(secondCell,2*i,vghostDiag,vghostOffdiag);
-        bu(secondCell,:) = ubValue;
-        bv(secondCell,:) = vbValue;
+        bu(secondCell) = ubValue;
+        bv(secondCell) = vbValue;
     end
 end
 

@@ -1,22 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%      NUMERICAL TECHNIQUES IN FLUID DYNAMICS       %%%%%%%%%%%%
-%%%%%%%%%%%%             Koen Devesse, Tom De Weer             %%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                         %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                            SIMPLE algorithm                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% General test case
-%
-% A file used to quickly test the SIMPLE algorithm. This file should not be
-% used to produce results: if figures or results for the report are needed,
-% a proper test file for the specific case should be made.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-clear;
-close all;
+clear all; close all;
 
 % Create a mesh
 Lx = 1;
@@ -24,7 +6,7 @@ Ly = 1;
 Nx = 20;
 Ny = 20;
 mu = 4;
-Uxtop = 0;
+Uxtop = -0.1;
 p1 = 5;
 p2 = 0;
 dPdx = (p2-p1)/Lx;
@@ -56,7 +38,6 @@ for i=1:casedef.dom.nC
     x = coord(1);
     y = coord(2);
 %     P0 = [P0, pfunc(x,y)];
-
 %     P0 = [P0, pfunc(x,y) + sin(pi*x/dx )];
     P0 = [P0, sin(pi*x/dx )];
 %     P0 = [P0, 0];
@@ -129,7 +110,7 @@ casedef.BC{jBC}.isNormalized = 0;
 
 % Set up iteration parameters
 casedef.iteration.maxniter = 500;
-casedef.iteration.resTol     = 1.e-5;
+casedef.iteration.resTol     = 1.e-8;
 casedef.iteration.dt = 0.01;
 % relaxation factor
 casedef.relaxation = 0.1;

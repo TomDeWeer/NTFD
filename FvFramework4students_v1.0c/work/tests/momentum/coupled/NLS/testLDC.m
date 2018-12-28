@@ -1,8 +1,8 @@
 clear all; close all;
 
 % Create a mesh
-for Reynolds = [ 200]
-    for N = [ 150]
+for Reynolds = [ 1000]
+    for N = [ ]
         disp(char("Re="+Reynolds))
         disp(char("N="+N))
         Nx = N;
@@ -72,10 +72,11 @@ for Reynolds = [ 200]
         casedef.BC{jBC}.data.pressure = 0; % no normal pressure derivative
         casedef.BC{jBC}.isNormalized = 0;
         % Set up iteration parameters
-        casedef.iteration.restol     = 1.e-3;
+        casedef.iteration.FuncTol     = 1.e-8;
+        casedef.iteration.OptTol      = 1.e-8;
         casedef.iteration.regularization = 1.e-5;
         coupledNLS(casedef);
-            
+        
     end
     
 end

@@ -202,9 +202,9 @@ while ~done
   
   [d,quadObj,normd,normdscal, normdNewton] = ...
        myOwn_dogleg(sizes.nVar,Fvec,JAC,grad,Delta,scalMat,reg);
-  if normdNewton < 10000
+  if normdNewton < 1000
      reg = reg/2;
-  elseif normdNewton > 1.e4
+  elseif normdNewton > 100
       reg = reg*1.5;
   end
   % Compute the model reduction given by d (pred).
@@ -322,7 +322,16 @@ while ~done
   [done,EXITFLAG,msgData] = testStop(normgradinf,tolf,tolfunvalue,tolx,...
        stepAccept,iter,evalOK,maxit,numFevals,maxfunc,Delta,normd,...
        obj,objold,d,xvec,detailedExitMsg,optionFeedback,verbosity);
-   
+   if obj<tolfunvalue
+    EXITFLAG = -1000; 
+    msgFlag = 1000;
+    fprintf('fsolve stopped because function value is lower than the tolerance  of %f \n',tolfunvalue);
+    %fprintf('Following message is wrong, but prevents program from crashing. \n')
+    msgData = {'trustnleqn',1,0,0,'fsolve', ...
+      [],0,0};
+    done = true;
+    
+  end
   % As the iteration has been completed, the fault tolerance
   % structure needs to be reset.
   faultTolStruct = newFaultTolStruct;

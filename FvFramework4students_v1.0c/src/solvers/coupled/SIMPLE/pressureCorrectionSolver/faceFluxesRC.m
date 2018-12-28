@@ -20,9 +20,59 @@ for faceindex=1:dom.nF
     if secondCell <= dom.nPc
         gradP(:,secondCell) = gradP(:,secondCell) - RCterm/omega2;
     else %nu heb je geen tweede vergelijking
-        gradP(:,secondCell) = gradP(:,firstCell);
+%         gradP(:,secondCell) = gradP(:,firstCell);
+        
+    % Checking which boundary the face belongs to
+        for randID = 1:length(casedef.BC)
+            range = dom.getzone(casedef.BC{randID}.zoneID).range;
+            if faceindex >= range(1) && faceindex <= range(end)
+                id =  randID;
+                break
+            end
+        end
+        % Checking which BC applies at that boundary
+        BC = casedef.BC{id}.pressureKind;
+        switch BC
+            case 'Dirichlet' % correction term must make sure that dirichlet condition is satisfied
+                % Determining lambda using the anonymous function
+                p_hat = casedef.BC{id}.data.pressure;
+                if isa(p_hat, 'function_handle')
+                    pos = dom.fCoord(:,faceindex);
+                    p_described = p_hat(pos(1),pos(2));
+                else
+                    p_described = p_hat;
+                end
+                for oppositeFace=1:dom.nIf
+                    [cell1,cell2] = getCells(dom,oppositeFace);
+                    extraNormal = dom.fNormal(:,oppositeFace);
+                    if cell1 == firstCell && isequal(n,-extraNormal)
+                        extraCell = cell2;
+                    elseif cell2 == firstCell && isequal(n,-extraNormal)
+                        extraCell = cell1;
+                    else
+                        continue;
+                    end
+                    distance = norm(dom.cCoord(:,extraCell)-dom.cCoord(:,secondCell));
+                    gradP(:,secondCell) = -n*(P(secondCell) - P(extraCell))/distance;
+                    break;
+                end
+
+            case 'Neumann'
+                dp = casedef.BC{id}.data.pressure;
+                if isa(dp, 'function_handle')
+                    pos = dom.fCoord(:,faceindex);
+                    dp_described = dp(pos(1),pos(2));
+                else
+                    dp_described = dp;
+                end
+                gradP(:,secondCell) = dp_described;
+            otherwise
+                disp('BC not found');
+        end
+        
     end
 end
+
 % gradPfield = Field(casedef.dom.allCells,1);
 % set(gradPfield,gradP);
 % casedef.gradP = gradPfield;
@@ -39,30 +89,28 @@ F = zeros(dom.nC,1);
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);
+    lambda = getLambda(dom,i);
     Af = dom.fArea(i);
     omega1 = dom.cVol(firstCell); 
     omega2 = dom.cVol(secondCell); 
     n = dom.fNormal(:,i);
-    theta = atan2(n(2),n(1));
+    ksi = dom.fXiMag(i);
+    interpolatedDP = (lambda*gradP(:,firstCell) + (1-lambda)*gradP(:,secondCell))'*n;
+    directDP = (P(secondCell)-P(firstCell))/ksi;
     if secondCell <= dom.nPc
-        af = sqrt(cos(theta)^2*(lambda*uP(firstCell) + (1-lambda)*uP(secondCell))^2 ...
-            + sin(theta)^2*(lambda*vP(firstCell) + (1-lambda)*vP(secondCell))^2);
+        af = lambda*uP(firstCell) + (1-lambda)*uP(secondCell);
     else %nu heb je geen tweede vergelijking
-        af = sqrt(cos(theta)^2*uP(firstCell)^2 + sin(theta)^2*vP(firstCell)^2);
+        af = uP(firstCell);
     end
-    lambda = getLambda(dom,i);
+    rho = casedef.material.rho;
+    af = af*rho;
+    RCcorrection = -(directDP - interpolatedDP)/af;
     Uf = [lambda*u(firstCell) + (1-lambda)*u(secondCell); ...
         lambda*v(firstCell) + (1-lambda)*v(secondCell)];
-    outwardFlux = Af*Uf'*n;
-    ksi = dom.fXiMag(faceindex);
-    directDP = (P(secondCell)-P(firstCell))/ksi;
-    interpolatedDP = (lambda*gradP(:,firstCell) + (1-lambda)*gradP(:,secondCell))'*n;
-    RCcorrection = -(directDP - interpolatedDP)/af;
-%     if n(1)>0 && i ==1
-%         disp(directDP-interpolatedDP)
-%     end
-    F(firstCell) = F(firstCell) + outwardFlux - Af*RCcorrection;
-    F(secondCell) = F(secondCell) - outwardFlux + Af*RCcorrection; % kijk hier een uur na of je gewoon min mag doen
+    outwardFlux1 = Af*(Uf'*n+omega1*RCcorrection);
+    outwardFlux2 = Af*(Uf'*n+omega2*RCcorrection);
+    F(firstCell) = F(firstCell) + outwardFlux1;
+    F(secondCell) = F(secondCell) - outwardFlux2; % kijk hier een uur na of je gewoon min mag doen
 end
 
 end

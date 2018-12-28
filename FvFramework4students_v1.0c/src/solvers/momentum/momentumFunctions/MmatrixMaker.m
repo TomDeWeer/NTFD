@@ -28,13 +28,13 @@ bv = zeros(nC,1);
 dt = casedef.iteration.dt;
 rho = casedef.material.rho;
 % add constant diagonal terms to A
-for i=1:nC
+for i=1:dom.nPc
    Ac = casedef.dom.cVol(i);% cell surface area
    Audiag(i) = Audiag(i) + Ac/dt;
    Avdiag(i) = Avdiag(i) + Ac/dt;
 end
 % add source terms
-for i=1:nC
+for i=1:dom.nPc
    Ac = casedef.dom.cVol(i);% cell surface area
    gradP = casedef.gradP.data(:,i);
    ui = casedef.U.data(1,i);

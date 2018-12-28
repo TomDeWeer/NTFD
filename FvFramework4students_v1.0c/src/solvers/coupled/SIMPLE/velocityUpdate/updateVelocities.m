@@ -11,6 +11,9 @@ set(U,casedef.U.data);      % Set to given initial guess
 u = U.data(1,:);
 v = U.data(2,:);
 
+% Ucorr = zeros(size(U.data(1,:)));
+% Vcorr = zeros(size(U.data(2,:)));
+
 for i= 1:dom.nIf+dom.nBf
     % Getting terms of the equations
     [firstCell,secondCell] = getCells(dom,i);
@@ -20,11 +23,13 @@ for i= 1:dom.nIf+dom.nBf
     n = dom.fNormal(:,i);
     pCorrFace = lambda*Pcorr(firstCell) + (1-lambda)*Pcorr(secondCell);
     rho = casedef.material.rho;
-    pressureCorrForce = Af*pCorrFace*n/rho;
+    pressureCorrForce = -Af*pCorrFace*n/rho;
     % First cell
     u(firstCell) = u(firstCell) + pressureCorrForce(1)/uP(firstCell);
     v(firstCell) = v(firstCell) + pressureCorrForce(2)/vP(firstCell);
     % Second cell
+%     u(secondCell) = u(secondCell) - pressureCorrForce(1)/uP(secondCell);
+%     v(secondCell) = v(secondCell) - pressureCorrForce(2)/vP(secondCell);
     % Checking whether it's a physical cell or a ghost cell
     if secondCell <= dom.nPc % Physical cell
         u(secondCell) = u(secondCell) - pressureCorrForce(1)/uP(secondCell);
@@ -34,6 +39,7 @@ for i= 1:dom.nIf+dom.nBf
         u(secondCell) = uGhost;
         v(secondCell) = vGhost;
     end
+    
 end
 
 Uupdated = [u; v];

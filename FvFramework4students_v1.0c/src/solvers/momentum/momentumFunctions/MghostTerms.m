@@ -37,19 +37,19 @@ switch BC
         end
     case 'Neumann'
         ksi = dom.fXiMag(faceIndex);
-        ughostDiag = 1/(ksi);
-        ughostOffdiag = -1/(ksi);
-        vghostDiag = 1/(ksi);
-        vghostOffdiag = -1/(ksi);
+        ughostDiag = 1;
+        ughostOffdiag = -1;
+        vghostDiag = 1;
+        vghostOffdiag = -1;
         du = casedef.BC{id}.data.bcval;
         if isa(du, 'function_handle')
             pos = dom.fCoord(:,faceIndex);
             b = du(pos(1),pos(2));
-            ubValue = b(1);
-            vbValue = b(2);
+            ubValue = ksi*b(1);
+            vbValue = ksi*b(2);
         else
-            ubValue = du(1);
-            vbValue = du(2);
+            ubValue = ksi*du(1);
+            vbValue = ksi*du(2);
         end
     otherwise
         disp('BC not found');

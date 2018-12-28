@@ -68,17 +68,26 @@ for faceIndex= dom.nIf+1:dom.nF
             A(ghostCell,physicalCell) = lambda;
             F(ghostCell) = -(p_described-lambda*current_physical_p-(1-lambda)*current_ghost_p);
         case 'Neumann'
-            ksi = dom.fXiMag(faceIndex);
-            dp = casedef.BC{id}.data.pressure;
-            if isa(dp, 'function_handle')
-                pos = dom.fCoord(:,faceIndex);
-                dp_described = dp(pos(1),pos(2));
+            % Check normalization
+            if casedef.BC{id}.isNormalized && i == range(1)
+                % apply zero dirichlet BC
+                p_described = 0;    % Standard pressure in literature is 0Pa
+                A(ghostCell,ghostCell) = 1-lambda;
+                A(ghostCell,physicalCell) = lambda;
+                F(ghostCell) = -(p_described-lambda*current_physical_p-(1-lambda)*current_ghost_p);
             else
-                dp_described = dp;
+                ksi = dom.fXiMag(faceIndex);
+                dp = casedef.BC{id}.data.pressure;
+                if isa(dp, 'function_handle')
+                    pos = dom.fCoord(:,faceIndex);
+                    dp_described = dp(pos(1),pos(2));
+                else
+                    dp_described = dp;
+                end
+                A(ghostCell,ghostCell) = (1/ksi);
+                A(ghostCell,physicalCell) = -(1/ksi);
+                F(ghostCell) = -(dp_described - (current_ghost_p-current_physical_p)/ksi);
             end
-            A(ghostCell,ghostCell) = (1/ksi);
-            A(ghostCell,physicalCell) = -(1/ksi);
-            F(ghostCell) = -(dp_described - (current_ghost_p-current_physical_p)/ksi);
         otherwise
             disp('BC not found');
     end

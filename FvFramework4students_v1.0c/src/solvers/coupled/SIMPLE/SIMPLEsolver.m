@@ -124,7 +124,7 @@ while iterate
     x = [p; u; v];
     residuals = NavierStokes(casedef, x);
     resnorm = norm(residuals);
-    fprintf("It %d : residual norm =  %.12f \n",niter, resnorm)
+%     fprintf("It %d : residual norm =  %.12f \n",niter, resnorm)
     if resnorm < casedef.iteration.resTol
         Uconverged = true;
         iterate = false;

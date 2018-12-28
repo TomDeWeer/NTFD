@@ -21,12 +21,8 @@ for i= 1:dom.nIf+dom.nBf
     Af = dom.fArea(i);
     ksi = dom.fXiMag(i);
     if secondCell <= dom.nPc
-        af = (lambda*uP(firstCell) + (1-lambda)*uP(secondCell));
-        % For extrapolating af at boundaries:
-        afGrad(firstCell) = (af - uP(firstCell)) / (lambda * ksi);
-        afGrad(secondCell) = (uP(secondCell) - af) / ((1-lambda) * ksi);
-    else %nu heb je geen tweede vergelijking => gebruik afGrad om te extrapoleren
-%         af = uP(firstCell) + afGrad(firstCell)*lambda*ksi;
+        af = lambda*uP(firstCell) + (1-lambda)*uP(secondCell);
+    else %nu heb je geen tweede vergelijking
         af = uP(firstCell);
     end
     rho = casedef.material.rho;
@@ -80,16 +76,15 @@ for faceIndex= dom.nIf+1:dom.nF
             else
                 dp_described = dp;
             end
-            A(ghostCell,ghostCell) = 1;
-            A(ghostCell,physicalCell) = -1;
-            F(ghostCell) = -(dp_described - (current_ghost_p-current_physical_p));
+            A(ghostCell,ghostCell) = (1/ksi);
+            A(ghostCell,physicalCell) = -(1/ksi);
+            F(ghostCell) = -(dp_described - (current_ghost_p-current_physical_p)/ksi);
         otherwise
             disp('BC not found');
     end
 end
 
 Pcorr = A\-F;
-
 % PcorrField = Field(dom.allCells,0);
 % set(PcorrField, Pcorr')
 % figure; hold on; axis off; axis equal; colormap(jet(50));

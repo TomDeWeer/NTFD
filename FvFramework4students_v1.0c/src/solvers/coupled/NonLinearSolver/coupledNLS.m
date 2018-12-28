@@ -3,7 +3,7 @@
 %
 %
 %==========================================================================
-function sol = coupledNLS(casedef)
+function result = coupledNLS(casedef)
 dom = casedef.dom;
 
 % initialize the optimization vector x
@@ -21,11 +21,18 @@ x0 = zeros(3*dom.nC,1);
 %outputFunc = @(x,optimVals,state) plotFlow(x,casedef, optimVals);
 options = optimoptions('fsolve','Display','iter-detailed',...
     'SpecifyObjectiveGradient',true, ...
-    'FiniteDifferenceStepSize', 1.e-5, 'FunctionTolerance',casedef.iteration.restol, 'Algorithm','trust-region-dogleg'); %"CheckGradients",true); % 'OutputFcn',outputFunc,
+    'FiniteDifferenceStepSize', 1.e-5, 'TolFun',casedef.iteration.FuncTol, 'OptimalityTolerance', casedef.iteration.OptTol, 'Algorithm','trust-region-dogleg'); %",CheckGradients",true); % 'OutputFcn',outputFunc,
 handle = @(x) NavierStokes(casedef, x);
 tic
 [sol, fval, exitflag, output] = myOwn_fsolve(handle,x0,options);
 output.time = toc;
-plotFlowFinal(sol,casedef,output)
-
+plotFlowFinal(sol,casedef,output);
+[p, u, v] = getPUV(casedef, sol);
+U = Field(dom.allCells,1);
+set(U,[u'; v']);
+P = Field(dom.allCells,0);
+set(P,p');
+result.U=U; result.P=P;
+result.sol = sol;
+result.output = output;
 end

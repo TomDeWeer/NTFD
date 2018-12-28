@@ -4,10 +4,10 @@ path = [pwd '\Figuren\Couette'];
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 20;
-Ny = 20;
+Nx = 21;
+Ny = 21;
 dPdx = -10;
-Uxtop = 0; % m/s
+Uxtop = 2; % m/s
 mu = 4;
 rho = 10;
 nu = mu/rho;
@@ -188,7 +188,7 @@ plot(ErrAtMiddle(1,:),ErrAtMiddle(2,:));
 
 
 % convergence experiment results
-Ns = [2, 4, 8, 16, 32];
+Ns = [2, 4, 8, 16, 32, 64, 128];
 MaximumErrors = [];
 MaximumErrorsPos = [];
 AverageErrors = [];
@@ -199,15 +199,15 @@ for N = Ns
     Nx = N;
     Ny = N;
     dPdx = -10;
-    Uxtop = 0; % m/s
+    Uxtop = 2; % m/s
     mu = 4;
     rho = 10;
     nu = mu/rho;
     dx = Lx/Nx;
     dy = Ly/Ny;
-    seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
+    seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.01,'o');
 
-    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.01,'o');
+    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,0.99,'o');
     casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
     mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
     % Create domain from mesh

@@ -123,8 +123,8 @@ while iterate
     v = casedef.U.data(2,:)';
     x = [p; u; v];
     residuals = NavierStokes(casedef, x);
-    resnorm = norm(residuals);
-%     fprintf("It %d : residual norm =  %.12f \n",niter, resnorm)
+    resnorm = norm(residuals)/length(residuals);
+    fprintf("It %d : residual norm =  %.12f \n",niter, resnorm)
     if resnorm < casedef.iteration.resTol
         Uconverged = true;
         iterate = false;
@@ -147,6 +147,8 @@ result.U = Field(dom.allCells,1);
 set(result.U,casedef.U.data);
 result.P = Field(dom.allCells,0);
 set(result.P, casedef.P.data)
+result.lastPcorr = Field(dom.allCells,0);
+set(result.P, Pcorr')
 
 end
 

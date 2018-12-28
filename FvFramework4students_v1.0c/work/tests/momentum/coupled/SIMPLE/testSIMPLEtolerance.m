@@ -33,7 +33,7 @@ clear;
 % mkdir('..\Figuren\Opgave 2.2');
 
 %% convergence experiment results
-Ns = [16, 32, 64];
+Ns = [16, 32];
 Tolpowers = [1, 2, 3, 4, 5, 6, 7, 8];
 MaximumErrors = zeros(length(Ns),length(Tolpowers));
 AverageErrors = zeros(length(Ns),length(Tolpowers));
@@ -42,7 +42,7 @@ for i = 1:length(Ns)
     for j = 1:length(Tolpowers)
         N = Ns(i);
         tol = Tolpowers(j);
-        fprintf('N: \n',N,'\n Tol: \n 10^-',tol)
+        fprintf("N = %d : tolerance =  %.12f \n",N,tol)
         Lx = 1;
         Ly = 1;
         Nx = N;
@@ -176,13 +176,11 @@ figure()
 hold on
 loglog(-0.1,-0.1,'k','LineWidth',1,'displayname','16 by 16 grid');
 loglog(-0.1,-0.1,'b','LineWidth',1,'displayname','32 by 32 grid');
-loglog(-0.1,-0.1,'color',[0 128/255 0],'LineWidth',1,'displayname','64 by 64 grid');
 loglog(10.^(-Tolpowers),AverageErrors(1,:),'Marker','.','LineStyle','-','color','k','HandleVisibility','off')
 loglog(10.^(-Tolpowers),AverageErrors(2,:),'Marker','.','LineStyle','-','color','b','HandleVisibility','off')
-loglog(10.^(-Tolpowers),AverageErrors(3,:),'Marker','.','LineStyle','-','color',[0 128/255 0],'HandleVisibility','off')
 xlabel('Tolerance on convergence criterium [-]','Interpreter','latex');
 ylabel('Error [m/s]','Interpreter','latex');
-legend({'16 by 16 grid','32 by 32 grid','64 by 64 grid'},'Interpreter','latex','Location','eastoutside');
+legend({'16 by 16 grid','32 by 32 grid'},'Interpreter','latex','Location','eastoutside');
 title('Error','interpreter','latex');
 set(gca,'TickLabelInterpreter', 'latex');
 set(gca,'XDir','reverse','XScale', 'log','YScale', 'log')
@@ -192,13 +190,11 @@ figure()
 hold on
 loglog(-0.1,-0.1,'k','LineWidth',1,'displayname','16 by 16 grid');
 loglog(-0.1,-0.1,'b','LineWidth',1,'displayname','32 by 32 grid');
-loglog(-0.1,-0.1,'color',[0 128/255 0],'LineWidth',1,'displayname','64 by 64 grid');
 loglog(10.^(-Tolpowers),MaximumErrors(1,:),'-x','color','k','HandleVisibility','off')
 loglog(10.^(-Tolpowers),MaximumErrors(2,:),'-x','color','b','HandleVisibility','off')
-loglog(10.^(-Tolpowers),MaximumErrors(3,:),'-x','color',[0 128/255 0],'HandleVisibility','off')
 xlabel('Tolerance on convergence criterium [-]','Interpreter','latex');
 ylabel('Error [m/s]','Interpreter','latex');
-legend({'16 by 16 grid','32 by 32 grid','64 by 64 grid'},'Interpreter','latex','Location','eastoutside');
+legend({'16 by 16 grid','32 by 32 grid'},'Interpreter','latex','Location','eastoutside');
 title('Error','interpreter','latex');
 set(gca,'TickLabelInterpreter', 'latex');
 set(gca,'XDir','reverse','XScale', 'log','YScale', 'log')
@@ -210,7 +206,7 @@ loglog(10.^(-Tolpowers),TotalTime(1,:),'-k.')
 loglog(10.^(-Tolpowers),TotalTime(2,:),'-b.')
 xlabel('Tolerance on convergence criterium [-]','Interpreter','latex');
 ylabel('Time [s]','Interpreter','latex');
-legend('10 by 10 grid','20 by 20 grid', 'Interpreter','latex')
+legend({'16 by 16 grid','32 by 32 grid'},'Interpreter','latex','Location','eastoutside');
 title('Total computing time','interpreter','latex');
 set(gca,'TickLabelInterpreter', 'latex');
 set(gca,'XDir','reverse','XScale', 'log','YScale', 'log')

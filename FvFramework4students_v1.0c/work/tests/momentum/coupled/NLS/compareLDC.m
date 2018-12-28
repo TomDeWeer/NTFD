@@ -1,7 +1,7 @@
 clear;
 close all;
 
-N = 21;
+N = 51;
 Re = 100;
 disp(char("Re="+Re))
 disp(char("N="+N))
@@ -9,8 +9,8 @@ Nx = N;
 Ny = N;
 L = 1;
 casedef.name = char("Re_"+Re+"_grid_"+Nx+"x"+Ny);
-mu = 4;
-rho = 10;
+mu = 100;
+rho = 1;
 Uxtop = Re*mu/(L*rho);
 % Reynolds = Uxtop*L*rho/mu;
 %fprintf("Reynolds number: %.2f \n",Reynolds)
@@ -74,90 +74,58 @@ casedef.BC{jBC}.data.velocity = @(x,y) [Uxtop , 0]; % no slip condition
 casedef.BC{jBC}.pressureKind   = 'Neumann';
 casedef.BC{jBC}.data.pressure = 0; % no normal pressure derivative
 casedef.BC{jBC}.isNormalized = 0;
-% % Set up iteration parameters
-% casedef.iteration.maxniter = 70;
-% casedef.iteration.resTol = 1.e-6;
-% casedef.iteration.dt = 0.001;
-% % relaxation factor
-% casedef.relaxation = 0.01;
-% 
-% % Call solver
-% tic
-% result = SIMPLEsolver(casedef);
-% fprintf("Time: %.3f \n",toc)
 
+casedef.iteration.FuncTol     = 1.e-8;
+casedef.iteration.OptTol      = 1.e-8;
+casedef.iteration.regularization = 1.e-5;
+result = coupledNLS(casedef);
 
 
 
 % compare with data from paper 
 % paper solution
 % u velocity at x=1/2
-y = [1.0,0.9766,0.9688,0.9609,0.9531,0.8516,0.7344,0.6172,0.5000,0.4531,0.2813,0.1719,0.1016,0.0703,0.0625,0.0547,0.0000];
+ylit = [1.0,0.9766,0.9688,0.9609,0.9531,0.8516,0.7344,0.6172,0.5000,0.4531,0.2813,0.1719,0.1016,0.0703,0.0625,0.0547,0.0000];
 uRe100 = [1.000,0.84123,0.78871,0.73722,0.68717,0.23151,0.00332,-0.13641,-0.20581,-0.21090,-0.15662,-0.10150,-0.06434,-0.04775,-0.04192,-0.03717, 0];
 % v velocity at y=1/2
-x = [1.0,0.9688,0.9609,0.9531,0.9453,0.9063,0.8594,0.8047,0.5000,0.2344,0.2266,0.1563,0.0938,0.0781,0.0703,0.0625,0.0000];
+xlit = [1.0,0.9688,0.9609,0.9531,0.9453,0.9063,0.8594,0.8047,0.5000,0.2344,0.2266,0.1563,0.0938,0.0781,0.0703,0.0625,0.0000];
 vRe100 = [0.00000,-0.05906,-0.07391,-0.08864,-0.10313,-0.16914,-0.22445,-0.24533,0.05454,0.17527,0.17507,0.16077,0.12317,0.10890,0.10091,0.09233,0.00000];
+
+uline = [];
+yline = [];
+for i=1:result.U.dom.nC
+    x = result.U.dom.cCoord(1,i);
+    y = result.U.dom.cCoord(2,i);
+    % Only keep the interior cells
+    if x>0.499 && x < 0.501 && y<L && y>0 
+        uline = [uline, result.U.data(1,i)/Uxtop];
+        yline = [yline, y];
+    end
+end
+vline = [];
+xline = [];
+for i=1:result.U.dom.nC
+    x = result.U.dom.cCoord(1,i);
+    y = result.U.dom.cCoord(2,i);
+    % Only keep the interior cells
+    if y>0.499 && y < 0.501 && x<L && x>0 
+        vline = [vline, result.U.data(2,i)/Uxtop];
+        xline = [xline, x];
+    end
+end
+
 
 figure()
 subplot(1,2,1);     % Subplot 1
 hold on
-plot(y,uRe100,'k:x')
+plot(ylit,uRe100,'k:x')
+plot(yline,uline, 'b')
 plot(0,0,':k');
 title('$U_x$ at $x=0.5$','interpreter','latex')
 subplot(1,2,2);     % Subplot 2
 hold on
-plot(x,vRe100,'k:x')
-plot([0 1],[0 0],'b');
+plot(xlit,vRe100,'k:x')
+hold on
+plot(xline,vline,'b')
 title('$U_y$ at $y=0.5$','interpreter','latex')
-for iter=1:500
-    
-    % Set up iteration parameters
-    casedef.iteration.maxniter = 0;
-    casedef.iteration.resTol = 1.e-6;
-    casedef.iteration.dt = 0.0001;
-    % relaxation factor
-    casedef.relaxation = 0.001;
-    % Call solver
-    result = SIMPLEsolver(casedef);
-    fprintf("It %d : residual norm =  %.12f \n",iter, result.resnorm)
-    
-    uline = [];
-    yline = [];
-    for i=1:result.U.dom.nC
-        x = result.U.dom.cCoord(1,i);
-        y = result.U.dom.cCoord(2,i);
-        % Only keep the interior cells
-        if x==0.5 && y<L && y>0 
-            uline = [uline, result.U.data(1,i)/Uxtop];
-            yline = [yline, y];
-        end
-    end
-    subplot(1,2,1);     % Subplot 1
-    children = get(gca, 'children');
-    delete(children(1));
-    plot(yline,uline, 'b-x')
-    h = legend('Literature','SIMPLE');
-    set(h,'interpreter','Latex','FontSize',11)
-    set(gca,'TickLabelInterpreter', 'latex');
 
-    vline = [];
-    xline = [];
-    for i=1:result.U.dom.nC
-        x = result.U.dom.cCoord(1,i);
-        y = result.U.dom.cCoord(2,i);
-        % Only keep the interior cells
-        if y==0.5 && x<L && x>0 
-            vline = [vline, result.U.data(2,i)/Uxtop];
-            xline = [xline, x];
-        end
-    end
-    subplot(1,2,2);     % Subplot 2
-    children = get(gca, 'children');
-    delete(children(1));
-    plot(xline,vline,'b-x')
-    h = legend('Literature','SIMPLE');
-    set(h,'interpreter','Latex','FontSize',11)
-    set(gca,'TickLabelInterpreter', 'latex');
-    
-    pause(0.05)
-end

@@ -57,8 +57,7 @@ for faceIndex= dom.nIf+1:dom.nF
         case 'Dirichlet' % correction term must make sure that dirichlet condition is satisfied
             % Determining lambda using the anonymous function
             lambda = getLambda(dom,faceIndex);
-          
->>>>>>> 4c5dfa2f53282b687c1487869973c5252f264ad9  p_hat = casedef.BC{id}.data.pressure;
+            p_hat = casedef.BC{id}.data.pressure;
             if isa(p_hat, 'function_handle')
                 pos = dom.fCoord(:,faceIndex);
                 p_described = p_hat(pos(1),pos(2));
@@ -70,7 +69,7 @@ for faceIndex= dom.nIf+1:dom.nF
             F(ghostCell) = -(p_described-lambda*current_physical_p-(1-lambda)*current_ghost_p);
         case 'Neumann'
             % Check normalization
-            if casedef.BC{id}.isNormalized && i == range(1)
+            if casedef.BC{id}.isNormalized && faceIndex == range(1)
                 % apply zero dirichlet BC
                 p_described = 0;    % Standard pressure in literature is 0Pa
                 A(ghostCell,ghostCell) = 1-lambda;

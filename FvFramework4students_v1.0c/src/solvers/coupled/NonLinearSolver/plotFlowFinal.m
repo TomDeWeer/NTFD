@@ -18,20 +18,20 @@ if plot
     figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Ux"); colorbar(); grid off; shading interp;
     fvmplotfield(Ux,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,'Ux.png'))
+%     saveas(gcf,fullfile(outputpath,'Ux.png'))
     figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Uy"); colorbar(); grid off; shading interp;
     fvmplotfield(Uy,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,'Uy.png'))
+%     saveas(gcf,fullfile(outputpath,'Uy.png'))
     figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("P"); colorbar(); grid off; shading interp;
     fvmplotfield(P,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,'P.png'));
+%     saveas(gcf,fullfile(outputpath,'P.png'));
     %close all;
     figure('visible',visible); hold on; axis off; axis equal; colormap(jet(50));
     scale = 'lin'; lw = 0; title("Umag"); colorbar(); grid off; shading interp;
     fvmplotfield(Umag,scale,lw, 1);
-    saveas(gcf,fullfile(outputpath,'Umag.png'));
+%     saveas(gcf,fullfile(outputpath,'Umag.png'));
     %close all;
     
     % plotting streamlines

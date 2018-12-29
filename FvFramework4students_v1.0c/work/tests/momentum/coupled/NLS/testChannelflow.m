@@ -2,7 +2,7 @@ clear all; close all;
 maxUxErrors = [];
 maxUyErrors = [];
 maxPErrors = [];
-Ni = [20];
+Ni = [5, 10, 20, 40];
 for N=Ni
     % Create a mesh
     Lx = 1;

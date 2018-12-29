@@ -9,6 +9,8 @@ P =  Field(casedef.dom.allCells,0);
 set(P,p');
 Umag =  Field(casedef.dom.allCells,0); 
 set(Umag,sqrt(u.^2+v.^2)');
+
+%outputpath = char("/users/start2015/r0585657/Documents/NTFD/NTFD/FvFramework4students_v1.0c/work/tests/momentum/coupled/NLS/Figures/LDC/"+casedef.name);
 outputpath = char("C:\Users\Tom\Desktop\Universiteit\2emaster\NTFD\FvFramework4students_v1.0c\FvFramework4students_v1.0c\work\tests\momentum\coupled\NLS\Figures\Channel\"+casedef.name);
 mkdir(outputpath)
 save(char(outputpath+"/output.mat"),'output','x')

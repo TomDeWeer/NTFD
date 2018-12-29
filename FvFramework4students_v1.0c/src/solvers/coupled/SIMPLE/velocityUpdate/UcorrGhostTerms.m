@@ -42,9 +42,9 @@ switch BC
             du_described = du;
         end
         % u
-        uGhost = ksi*du_described(1) + uPhys;
+        uGhost = -ksi*du_described(1) + uPhys;
         % v
-        vGhost = ksi*du_described(2) + vPhys;
+        vGhost = -ksi*du_described(2) + vPhys;
     otherwise
         disp('BC not found');
 end

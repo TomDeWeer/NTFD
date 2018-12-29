@@ -4,8 +4,8 @@ path = [pwd '\Figuren\Couette'];
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 100;
-Ny = 100;
+Nx = 21;
+Ny = 21;
 dPdx = -10;
 Uxtop = 2; % m/s
 mu = 4;
@@ -60,8 +60,9 @@ casedef.BC{jBC}.data.bcval = [Uxtop, 0];
 
 % Set up iteration parameters
 casedef.iteration.maxniter = 1000;
-casedef.iteration.UTol     = 1.e-12;
-casedef.iteration.dt = 100;
+casedef.iteration.UTol     = 1.e-6;
+
+casedef.iteration.dt = 1;
 
 % Call solver
 result = momentumsolver(casedef);
@@ -75,7 +76,7 @@ fvmplotfield(result.U,scale,lw, 1);
 xlabel('x [m]','Interpreter','latex');
 ylabel('y [m]','Interpreter','latex');
 colorbar('TickLabelInterpreter', 'latex');
-saveas(gcf,fullfile(path,'Couette_50x50.png'));
+%saveas(gcf,fullfile(path,'Couette_50x50.png'));
 
 
 
@@ -120,6 +121,7 @@ Ni=0;
 Err = Field(casedef.dom.allCells, 0);
 set(Err,zeros(1,U.elcountzone));
 comp_err = zeros(1, size(Err.data,2));
+ErrAtMiddle = [];
 for i=1:result.U.dom.nC
     x = result.U.dom.cCoord(1,i);
     y = result.U.dom.cCoord(2,i);
@@ -139,6 +141,9 @@ for i=1:result.U.dom.nC
             maxErrx = x;
             maxErry = y;
         end
+        if x == Lx/2
+            ErrAtMiddle = [ErrAtMiddle, [y; err]];
+        end
     end
 end
 set(Err,comp_err);
@@ -148,6 +153,10 @@ fprintf("Maximum error: %.10f \n", maxErr)
 figure; hold on; axis image; colormap(jet(50));
 scale = 'lin'; lw = 0.2; colorbar(); title('Error')
 fvmplotfield(Err,scale,lw);
+
+
+figure()
+plot(ErrAtMiddle(1,:),ErrAtMiddle(2,:));
 
 % 
 % % comparing to analytical solution: horizontal line
@@ -179,8 +188,9 @@ fvmplotfield(Err,scale,lw);
 
 
 % convergence experiment results
-Ns = [2, 4, 8, 16, 32, 64];
+Ns = [2, 4, 8, 16, 32, 64, 128];
 MaximumErrors = [];
+MaximumErrorsPos = [];
 AverageErrors = [];
 for N = Ns
     fprintf('N: %f \n',N)
@@ -195,8 +205,9 @@ for N = Ns
     nu = mu/rho;
     dx = Lx/Nx;
     dy = Ly/Ny;
-    seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.00,'o');
-    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,1.00,'o');
+    seedI = LineSeed.lineSeedOneWayBias([0 0],[Lx 0],Nx,1.01,'o');
+
+    seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 Ly],Ny,0.99,'o');
     casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
     mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
     % Create domain from mesh
@@ -265,7 +276,7 @@ for N = Ns
             Uxexact = realU(y);
             % Compute relative error
             err = abs((Uxexact-Uxapprox));
-            comp_err(i) = err;
+            comp_err(i) = err/abs(Uxexact);
             % Compute average error
             avgErr = avgErr + err;
             Ni = Ni+1;
@@ -285,17 +296,18 @@ for N = Ns
     avgErr = avgErr/Ni;
     fprintf("Maximum error: %.10f \n", maxErr)
     MaximumErrors = [MaximumErrors, maxErr];
+    MaximumErrorsPos = [MaximumErrorsPos, [maxErrx; maxErry]];
     AverageErrors = [AverageErrors, avgErr];
 end
 
 
 figure()
-loglog(Ns,MaximumErrors, "kx")
+loglog(Ns,MaximumErrors,'x','color','k')
 hold on
-loglog(Ns,AverageErrors, "rx")
+loglog(Ns,AverageErrors,'x','color','r')
 xlabel('N [-]','Interpreter','latex');
 ylabel('Error [K]','Interpreter','latex');
 legend('Maximum','Average', 'Interpreter','latex')
 set(gca,'TickLabelInterpreter', 'latex');
-saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
+%saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
 

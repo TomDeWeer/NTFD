@@ -2,7 +2,8 @@ clear all; close all;
 maxUxErrors = [];
 maxUyErrors = [];
 maxPErrors = [];
-Ni = [5, 10, 20, 40];
+Ni = [5, 10, 20, 40, 80, 160];
+times = [];
 for N=Ni
     % Create a mesh
     Lx = 1;
@@ -11,7 +12,7 @@ for N=Ni
     Ny = N;
     mu = 4;
     dPdx = -10;
-    Uxtop = 0;
+    Uxtop = 2;
     p0 = 5;
     rho = 10;
     nu = mu/rho;
@@ -88,17 +89,16 @@ for N=Ni
 %     fvmplotfield(result.U,scale,lw, 2);
 
 
-    tic
     result = coupledNLS(casedef);
-    fprintf("Computation time: %.10f \n ", toc)
-    figure; hold on; axis off; axis equal; colormap(jet(50));
-    scale = 'lin'; lw = 0.2; colorbar();
-    fvmplotfield(result.P,scale,lw);
-    set(gca,'TickLabelInterpreter', 'latex');
-    xlabel('x [m]','Interpreter','latex');
-    ylabel('y [m]','Interpreter','latex');
-    colorbar('TickLabelInterpreter', 'latex');
+%     figure; hold on; axis off; axis equal; colormap(jet(50));
+%     scale = 'lin'; lw = 0.2; colorbar();
+%     fvmplotfield(result.P,scale,lw);
+%     set(gca,'TickLabelInterpreter', 'latex');
+%     xlabel('x [m]','Interpreter','latex');
+%     ylabel('y [m]','Interpreter','latex');
+%     colorbar('TickLabelInterpreter', 'latex');
     
+    times = [times, result.output.time];
     
     res = NavierStokes(casedef,result.sol);
     fprintf("Final residual value ((res'*res)): %.10f \n", (res'*res))
@@ -167,34 +167,53 @@ for N=Ni
     fprintf("Average P error: %.10f \n", avgPErr)
 
     maxPErrors = [maxPErrors, maxPErr];
-%     figure; hold on; axis off; axis equal; colormap(jet(50));
-%     scale = 'lin'; lw = 1; title("Ux error"); colorbar();
-%     fvmplotfield(UXErr,scale,lw);
-%     figure; hold on; axis off; axis equal; colormap(jet(50));
-%     scale = 'lin'; lw = 1; title("Uy error"); colorbar();
-%     fvmplotfield(UYErr,scale,lw);
-%     figure; hold on; axis off; axis equal; colormap(jet(50));
-%     scale = 'lin'; lw = 1; title("P error"); colorbar();
-%     fvmplotfield(PErr,scale,lw);
-    xi = [];
-    pi = [];
-    for i=1:length(result.P.data)
-        p = result.P.data(i);
-        coord = casedef.dom.cCoord(:,i);
-        x = coord(1);
-        y = coord(2);
-        if y < 0.5 + dx && y>0.5
-            if x>0
-                xi = [xi, x];
-                pi = [pi, p];
-            else
-                xi = [x, xi];
-                pi = [p, pi];
-            end
-        end
-    end
-    figure;
-    plot(xi, pi)
+    figure; hold on; axis off; axis equal; colormap(jet(50));
+    scale = 'lin'; lw = 1; title("Ux error"); colorbar();
+    fvmplotfield(UXErr,scale,lw);
+    figure; hold on; axis off; axis equal; colormap(jet(50));
+    scale = 'lin'; lw = 1; title("Uy error"); colorbar();
+    fvmplotfield(UYErr,scale,lw);
+    figure; hold on; axis off; axis equal; colormap(jet(50));
+    scale = 'lin'; lw = 1; title("P error"); colorbar();
+    fvmplotfield(PErr,scale,lw);
+%     xi = [];
+%     pi = [];
+%     for i=1:length(result.P.data)
+%         p = result.P.data(i);
+%         coord = casedef.dom.cCoord(:,i);
+%         x = coord(1);
+%         y = coord(2);
+%         if y < 0.5 + dx && y>0.5
+%             if x>0
+%                 xi = [xi, x];
+%                 pi = [pi, p];
+%             else%     xi = [];
+%     pi = [];
+%     for i=1:length(result.P.data)
+%         p = result.P.data(i);
+%         coord = casedef.dom.cCoord(:,i);
+%         x = coord(1);
+%         y = coord(2);
+%         if y < 0.5 + dx && y>0.5
+%             if x>0
+%                 xi = [xi, x];
+%                 pi = [pi, p];
+%             else
+%                 xi = [x, xi];
+%                 pi = [p, pi];
+%             end
+%         end
+%     end
+%     figure;
+%     plot(xi, pi)
+
+%                 xi = [x, xi];
+%                 pi = [p, pi];
+%             end
+%         end
+%     end
+%     figure;
+%     plot(xi, pi)
 end
 
 figure()
@@ -206,6 +225,9 @@ xlabel('N','Interpreter','latex' )
 h = legend('max($\mid U_x - \bar{U}_x \mid$)','max($\mid U_y - \bar{U}_y \mid$)','max($\mid P - \bar{P} \mid$)');
 set(h,'interpreter','Latex','FontSize',11)
 set(gca,'TickLabelInterpreter', 'latex');
-
-
+figure()
+plot(Ni,times,'k-x')
+xlabel('N','Interpreter', 'Latex')
+ylabel('Computation time [s]', 'Interpreter', 'Latex')
+set(gca,'TickLabelInterpreter', 'latex');
 

@@ -1,6 +1,6 @@
 clear all; close all;
 maxResiduals = [];
-Ni = [20];
+Ni = [5, 10, 20, 40, 80, 160];
 for N=Ni
     % Create a mesh
     Lx = 1;
@@ -106,7 +106,7 @@ for N=Ni
     colorbar('TickLabelInterpreter', 'latex');
     fvmplotfield(Preal,scale,lw);
 end
-% figure();
-% loglog(Ni,maxResiduals, "kx")
-% ylabel("max(residual)",'Interpreter','latex')
-% set(gca,'TickLabelInterpreter', 'latex');
+figure();
+loglog(Ni,maxResiduals, "kx")
+ylabel("max(residual)",'Interpreter','latex')
+set(gca,'TickLabelInterpreter', 'latex');

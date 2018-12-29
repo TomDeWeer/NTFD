@@ -31,6 +31,7 @@ while iterate
     reset(eqnV); 
     
     [Au, bu, Av, bv] = MmatrixMaker(casedef);
+
     
     % Create a matlab sparse linear system from the eqn object
     eqnU.adata = Au;
@@ -72,6 +73,7 @@ while iterate
         Unew = [unew, vnew];
         set(casedef.U,Unew'); % Put algebraic solution in the Field
     end
+
 end % iterate
 
 result.endtime = now; % call datestr(now) for displaying this time 

@@ -7,15 +7,15 @@ path = [pwd '/Figuren/Diffusion'];
 
 H = 2;
 L = 1;
-
+number = 20;
 K = 0.01;
-Nx = 20*L;
+Nx = number*L;
 dx = L/Nx;
-Ny = 20*H;
+Ny = number*H;
 dy = H/Ny;
 % Create a mesh
-seedI = LineSeed.lineSeedOneWayBias([0 0],[L 0],Nx,0.95,'o');
-seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 H],Ny,0.9,'o');
+seedI = LineSeed.lineSeedOneWayBias([0 0],[L 0],Nx,1,'o');
+seedJ = LineSeed.lineSeedOneWayBias([0 0],[0 H],Ny,1,'o');
 casedef.boundarynames = {'WESTRAND','OOSTRAND','ZUIDRAND','NOORDRAND'};
 mesh  = TwoSeedMesher.genmesh(seedI,seedJ,casedef.boundarynames);
 % Create domain from mesh
@@ -55,8 +55,6 @@ jBC = jBC+1;
 casedef.BC{jBC}.zoneID = 'NOORDRAND';
 casedef.BC{jBC}.kind   = 'Neumann';
 casedef.BC{jBC}.data.bcval = @(x,y) sin(pi*x/L); 
-%casedef.BC{jBC}.data.bcval = @(x,y) 1; 
-%casedef.BC{jBC}.data.bcval = @(x,y) x*(L-x); 
 % de flux die door deze wand 
 % naar binnen stroomt is 1W/m
 
@@ -119,6 +117,9 @@ saveas(gcf,fullfile(path,'Analytical_results.png'));
 Ni=0;
 maxErr = 0;
 avgErr = 0;
+TemperatureError = Field(casedef.dom.allCells, 0);
+set(TemperatureError,zeros(1,TemperatureError.elcountzone));
+comp_err = zeros(1, size(TemperatureError.data,2));
 for i=1:result.T.dom.nC
     x = result.T.dom.cCoord(1,i);
     y = result.T.dom.cCoord(2,i);
@@ -131,7 +132,9 @@ for i=1:result.T.dom.nC
             Texact = Texact+ Tn(x, y, n);
         end
         % Compute relative error
-        err = abs(Texact-Tapprox)/Texact;
+        err = abs(Texact-Tapprox);
+        comp_err(i) = err;
+
         % Compute average error
         avgErr = avgErr + err;
         Ni = Ni+1;
@@ -143,6 +146,11 @@ for i=1:result.T.dom.nC
         end
     end
 end
+set(TemperatureError,comp_err);
+figure; hold on; axis image; colormap(jet(50));
+scale = 'lin'; lw = 0.2; colorbar(); title('Error')
+fvmplotfield(TemperatureError,scale,lw);
+
 avgErr = avgErr/Ni;
 fprintf("Average error: %.10f \n",avgErr)
 fprintf("Max error: %.10f \n",maxErr)
@@ -153,6 +161,7 @@ for n = 2:2:110
     Ai = [Ai; An(n)*max(max(Tn(X, Y, n)))];
 end
 
+
 figure()
 semilogy(ni, abs(Ai),'b')
 xlabel('n [-]','Interpreter','latex');
@@ -162,8 +171,9 @@ saveas(gcf,fullfile(path,'Eigenfunction_size.png'));
 
 %% Test convergentie
 
-gridsizes = [2, 4, 8, 16, 32, 64, 128, 256 ,512];
+gridsizes = [2, 4, 8, 16, 32, 64, 128, 256];
 error = [];
+maxerrors = [];
 for number=gridsizes
     disp(number)
     Nx = number*L;
@@ -227,6 +237,9 @@ for number=gridsizes
     Ni=0;
     maxErr = 0;
     avgErr = 0;
+    TemperatureError = Field(casedef.dom.allCells, 0);
+    set(TemperatureError,zeros(1,TemperatureError.elcountzone));
+    comp_err = zeros(1, size(TemperatureError.data,2));
     for i=1:result.T.dom.nC
         x = result.T.dom.cCoord(1,i);
         y = result.T.dom.cCoord(2,i);
@@ -240,6 +253,7 @@ for number=gridsizes
             end
             % Compute relative error
             err = abs(Texact-Tapprox);
+            comp_err(i) = err;
             % Compute average error
             avgErr = avgErr + err;
             Ni = Ni+1;
@@ -251,15 +265,32 @@ for number=gridsizes
             end
         end
     end
-    avgErr = avgErr/Ni;
+    set(TemperatureError,comp_err);
+    figure; hold on; axis image; colormap(jet(50));
+    scale = 'lin'; lw = 0; colorbar();
+    fvmplotfield(TemperatureError,scale,lw);
     
+    figure; hold on; axis image; colormap(jet(50));
+    scale = 'lin'; lw = 0;
+    fvmplotfield(result.T,scale,lw);
+    xlabel('x [m]','Interpreter','latex');
+    ylabel('y [m]','Interpreter','latex');
+    colorbar('TickLabelInterpreter', 'latex');
+    saveas(gcf,fullfile(path,'Numerical_results.png'));
+
+    avgErr = avgErr/Ni;
+    maxerrors = [maxerrors, maxErr];
     error = [error, avgErr];
 end
 
 figure()
-loglog(gridsizes, error, 'kx')
+loglog(gridsizes, maxerrors, 'kx')
+hold on
+loglog(gridsizes, error, 'rx')
 xlabel('N [-]','Interpreter','latex');
 ylabel('Error [K]','Interpreter','latex');
+h = legend('Maximum','Average');
+set(h,'interpreter','Latex','FontSize',11)
 set(gca,'TickLabelInterpreter', 'latex');
 saveas(gcf,fullfile(path,'Error_convergence.png'));
 

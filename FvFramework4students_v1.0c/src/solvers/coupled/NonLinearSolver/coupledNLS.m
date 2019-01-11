@@ -20,11 +20,10 @@ if isfield(casedef,'P') && isfield(casedef,'U')
 else
     x0 = zeros(3*dom.nC,1);
 end
-
 %outputFunc = @(x,optimVals,state) plotFlow(x,casedef, optimVals);
 options = optimoptions('fsolve','Display','iter-detailed',...
     'SpecifyObjectiveGradient',true, ...
-    'FiniteDifferenceStepSize', 1.e-5, 'TolFun',casedef.iteration.FuncTol, 'OptimalityTolerance', casedef.iteration.OptTol, 'Algorithm','trust-region-dogleg'); %",CheckGradients",true); % 'OutputFcn',outputFunc,
+    'FiniteDifferenceStepSize', 1.e-5, 'TolFun',casedef.iteration.FuncTol, 'OptimalityTolerance', casedef.iteration.OptTol, 'Algorithm','trust-region-dogleg','MaxIterations',5000);%"CheckGradients",true); % 'OutputFcn',outputFunc,
 handle = @(x) NavierStokes(casedef, x);
 tic
 [sol, fval, exitflag, output] = myOwn_fsolve(handle,x0,options);

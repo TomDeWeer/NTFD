@@ -1,7 +1,7 @@
 clear;
 close all;
 
-N = 51;
+N = 21;
 Re = 100;
 disp(char("Re="+Re))
 disp(char("N="+N))
@@ -80,6 +80,27 @@ casedef.iteration.OptTol      = 1.e-8;
 casedef.iteration.regularization = 1.e-5;
 result = coupledNLS(casedef);
 
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 0.; colorbar(); title('P')
+fvmplotfield(result.P,scale,lw);
+set(gca,'TickLabelInterpreter', 'latex');
+xlabel('x [m]','Interpreter','latex');
+ylabel('y [m]','Interpreter','latex');
+colorbar('TickLabelInterpreter', 'latex');
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 0.; colorbar(); title('Ux')
+fvmplotfield(result.U,scale,lw,1);
+set(gca,'TickLabelInterpreter', 'latex');
+xlabel('x [m]','Interpreter','latex');
+ylabel('y [m]','Interpreter','latex');
+colorbar('TickLabelInterpreter', 'latex');
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 0.; colorbar(); title('Uy')
+fvmplotfield(result.U,scale,lw,2);
+set(gca,'TickLabelInterpreter', 'latex');
+xlabel('x [m]','Interpreter','latex');
+ylabel('y [m]','Interpreter','latex');
+colorbar('TickLabelInterpreter', 'latex');
 
 
 % compare with data from paper 
@@ -97,7 +118,7 @@ for i=1:result.U.dom.nC
     x = result.U.dom.cCoord(1,i);
     y = result.U.dom.cCoord(2,i);
     % Only keep the interior cells
-    if x>0.499 && x < 0.501 && y<L && y>0 
+    if x>0.5-(dx/2) && x < 0.5+(dx/2) && y<L && y>0 
         uline = [uline, result.U.data(1,i)/Uxtop];
         yline = [yline, y];
     end
@@ -108,7 +129,7 @@ for i=1:result.U.dom.nC
     x = result.U.dom.cCoord(1,i);
     y = result.U.dom.cCoord(2,i);
     % Only keep the interior cells
-    if y>0.499 && y < 0.501 && x<L && x>0 
+    if y>0.5-(dy/2) && y < 0.5+(dy/2) && x<L && x>0 
         vline = [vline, result.U.data(2,i)/Uxtop];
         xline = [xline, x];
     end
@@ -119,13 +140,13 @@ figure()
 subplot(1,2,1);     % Subplot 1
 hold on
 plot(ylit,uRe100,'k:x')
-plot(yline,uline, 'b')
+plot(yline,uline, 'r')
 plot(0,0,':k');
 title('$U_x$ at $x=0.5$','interpreter','latex')
 subplot(1,2,2);     % Subplot 2
 hold on
 plot(xlit,vRe100,'k:x')
 hold on
-plot(xline,vline,'b')
+plot(xline,vline,'r')
 title('$U_y$ at $y=0.5$','interpreter','latex')
 

@@ -294,18 +294,18 @@ for i=dom.nIf+1:dom.nF
             JBCEi = sparse(double(Np+Nu+Nv),1);
             if casedef.BC{id}.isNormalized && i == range(1)
                 % apply zero dirichlet BC
-%                 lambda = getLambda(dom,i);
-%                 BCE = [BCE; lambda*pPC + (1-lambda)*pGC];
-%                 JBCEi(PC) = lambda;
-%                 JBCEi(GC) = (1-lambda);
-%                 JBCE = [JBCE; JBCEi'];
+                lambda = getLambda(dom,i);
+                BCE = [BCE; lambda*pPC + (1-lambda)*pGC];
+                JBCEi(PC) = lambda;
+                JBCEi(GC) = (1-lambda);
+                JBCE = [JBCE; JBCEi'];
 %                 lambda = getLambda(dom,i);
 %                 BCE = [BCE; pGC];
 %                 JBCEi(GC) = 1;
 %                 JBCE = [JBCE; JBCEi'];
-                BCE = [BCE; fixedPressureGradient+pPC/(ksi)];
-                JBCEi(PC) =  1/ksi;
-                JBCE = [JBCE; JBCEi']; 
+%                 BCE = [BCE; fixedPressureGradient+pPC/(ksi)];
+%                 JBCEi(PC) =  1/ksi;
+%                 JBCE = [JBCE; JBCEi']; 
             else
                 BCE = [BCE; fixedPressureGradient-(pGC-pPC)/(ksi)];
                 JBCEi(GC) = -1/ksi;

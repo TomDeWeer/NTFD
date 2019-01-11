@@ -11,13 +11,16 @@ dom = casedef.dom;
 % x = [p ; u; v] where p contains pressures u contains x velocities and y
 % contains y velocities
 
-% uvec = casedef.U.data;
-% u = uvec(1,:)';
-% v = uvec(2,:)';
-% p = casedef.P.data';
-% 
-% x0 = [p; u; v];
-x0 = zeros(3*dom.nC,1);
+if isfield(casedef,'P') && isfield(casedef,'U')
+    uvec = casedef.U.data;
+    u = uvec(1,:)';
+    v = uvec(2,:)';
+    p = casedef.P.data';
+    x0 = [p; u; v];
+else
+    x0 = zeros(3*dom.nC,1);
+end
+
 %outputFunc = @(x,optimVals,state) plotFlow(x,casedef, optimVals);
 options = optimoptions('fsolve','Display','iter-detailed',...
     'SpecifyObjectiveGradient',true, ...
@@ -26,7 +29,7 @@ handle = @(x) NavierStokes(casedef, x);
 tic
 [sol, fval, exitflag, output] = myOwn_fsolve(handle,x0,options);
 output.time = toc;
-plotFlowFinal(sol,casedef,output);
+% plotFlowFinal(sol,casedef,output);
 [p, u, v] = getPUV(casedef, sol);
 U = Field(dom.allCells,1);
 set(U,[u'; v']);

@@ -9,7 +9,7 @@ dom = casedef.dom;
 Np = length(p);
 Nu = length(u);
 Nv = length(v);
-RC=1;
+RC=0;
 
 %% Continuity equations: 
 CE = zeros(dom.nPc,1); % contains residuals of equations (1 eq for every cell)
@@ -81,7 +81,7 @@ for i=1:dom.nF
         dpdn1 = (P2-P0)/(Lxi01 + Lxi12);
         dpdn2 = (P3-P1)/(Lxi12 + Lxi23);
         dpdn_hat = lambda*dpdn1 + (1-lambda)*dpdn2;
-        factor = Af;%*omega*(1/af);
+        factor = Af*0.0001;%*omega*(1/af);
         % On first cell
         CE(firstNbC) = CE(firstNbC) + factor*(dpdn -dpdn_hat);
         % Derivative contributions of dpdn_hat

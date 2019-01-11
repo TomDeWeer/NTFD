@@ -89,7 +89,7 @@ else
 %     fprintf("Norm of dNewton: %.3f \n",normdNewton)
 %     fprintf("gmres relative residual norm: %.3f \n",norm(A*dNewton -b)/norm(b))
 
-%     fprintf("Real relative residual norm: %.3f \n",norm(JAC*dNewton + F)/norm(F))
+%     fprintf("Relative residual norm: %.3f \n",norm(JAC*dNewton + F)/norm(F));
 %     fprintf("Regularization parameter: %.3e \n",reg)
 
     

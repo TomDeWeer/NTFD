@@ -202,10 +202,10 @@ while ~done
   
   [d,quadObj,normd,normdscal, normdNewton] = ...
        myOwn_dogleg(sizes.nVar,Fvec,JAC,grad,Delta,scalMat,reg);
-  if normdNewton < 1000
-     reg = reg/2;
-  elseif normdNewton > 100
-      reg = reg*1.5;
+  if normdNewton < 100000
+     reg = reg/1.1;
+  elseif normdNewton > 100000
+      reg = reg*1.1;
   end
   % Compute the model reduction given by d (pred).
   pred = -quadObj;

@@ -1,12 +1,27 @@
-clear all; close all;
-path = [pwd '\Figures\Couette'];
-[~, ~, ~] = mkdir(path);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%      NUMERICAL TECHNIQUES IN FLUID DYNAMICS       %%%%%%%%%%%%
+%%%%%%%%%%%%             Koen Devesse, Tom De Weer             %%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                            SIMPLE algorithm                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Test case: Couette flow
+%
+% Test case for a basic validation of the SIMPLE algorithm using the
+% Couette flow test case.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear;
+close all;
 
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 10;
-Ny = 10;
+Nx = 20;
+Ny = 20;
 p0 = 1;
 Uxtop = 2; % m/s
 mu = 1;

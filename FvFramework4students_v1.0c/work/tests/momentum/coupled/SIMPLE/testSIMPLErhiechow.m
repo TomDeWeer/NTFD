@@ -7,11 +7,11 @@
 %                            SIMPLE algorithm                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% General test case
+% Test case: Rhie-Chow
 %
-% A file used to quickly test the SIMPLE algorithm. This file should not be
-% used to produce results: if figures or results for the report are needed,
-% a proper test file for the specific case should be made.
+% Test case for the Rhie-Chow interpolation. This file generates all the
+% relevant plots. Switching off Rhie-Chow interpolation is done by
+% commenting the relevant code out in pressureCorrSolver.m
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -21,8 +21,8 @@ close all;
 % Create a mesh
 Lx = 1;
 Ly = 1;
-Nx = 128;
-Ny = 128;
+Nx = 20;
+Ny = 20;
 mu = 4;
 Uxtop = 0;
 p1 = 5;
@@ -57,11 +57,15 @@ for i=1:casedef.dom.nC
     y = coord(2);
 %     P0 = [P0, pfunc(x,y)];
 %     P0 = [P0, pfunc(x,y) + sin(pi*x/dx )];
-%     P0 = [P0, sin(pi*x/dx )];
-    P0 = [P0, 0];
+    P0 = [P0, sin(pi*x/dx)*sin(pi*y/dx)];
+%     P0 = [P0, 0];
 end
 set(P,P0)
 casedef.P = P;
+
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("P"); colorbar();
+fvmplotfield(casedef.P,scale,lw);
 
 % Define material properties
 casedef.material.nu = nu;  % viscosity [kinematic]
@@ -106,48 +110,53 @@ casedef.BC{jBC}.isNormalized = 0;
 
 
 % Set up iteration parameters
-casedef.iteration.maxniter = 800;
-casedef.iteration.resTol     = 1.e-6;
+casedef.iteration.maxniter = 300;
+casedef.iteration.resTol = 1.e-5;
 casedef.iteration.dt = 0.01;
 % relaxation factor
-casedef.relaxation = 0.007;
+casedef.relaxation = 0.1;
 
 % Call solver
 tic
 result = SIMPLEsolver(casedef);
 fprintf("Time: %.3f \n",toc)
 
-% % Plot result
-% % ux
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Ux"); colorbar();
-% fvmplotfield(result.U,scale,lw, 1);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Uy"); colorbar();
-% fvmplotfield(result.U,scale,lw, 2);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("P"); colorbar();
-% fvmplotfield(result.P,scale,lw);
-% 
-% xi = [];
-% pi = [];
-% for i=1:length(casedef.P.data)
-%     p = casedef.P.data(i);
-%     coord = casedef.dom.cCoord(:,i);
-%     x = coord(1);
-%     y = coord(2);
-%     if y == 0.5 + dx/2
-%         if x>0
-%             xi = [xi, x];
-%             pi = [pi, p];
-%         else
-%             xi = [x, xi];
-%             pi = [p, pi];
-%         end
-%     end
-% end
-% figure;
-% plot(xi, pi)
+% Plot result
+% ux
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("Ux"); colorbar();
+fvmplotfield(result.U,scale,lw, 1);
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("Uy"); colorbar();
+fvmplotfield(result.U,scale,lw, 2);
+figure; hold on; axis off; axis equal; colormap(jet(50));
+scale = 'lin'; lw = 1; title("P"); colorbar();
+fvmplotfield(result.P,scale,lw);
+
+xi = [];
+pi = [];
+for i=1:length(casedef.P.data)
+    p = casedef.P.data(i);
+    coord = casedef.dom.cCoord(:,i);
+    x = coord(1);
+    y = coord(2);
+    if y == 0.5 + dx/2
+        if x>0
+            xi = [xi, x];
+            pi = [pi, p];
+        else
+            xi = [x, xi];
+            pi = [p, pi];
+        end
+    end
+end
+figure;
+hold on
+plot([0 1],[5 0],':k');
+plot(xi, pi, 'b')
+xlabel('x [m]','Interpreter','latex');
+ylabel('Pressure [Pa]','Interpreter','latex');
+set(gca,'TickLabelInterpreter', 'latex');
 
 maxErr = 0;
 avgErr = 0;
@@ -195,103 +204,10 @@ fprintf("Average error: %.10f \n", avgErr)
 
 figure()
 hold on
-plot(ErrAtMiddle(1,:),ErrAtMiddle(2,:),'r');
 plot(ValueAtMiddle(1,:),ValueAtMiddle(2,:),'b');
 plot(ExactAtMiddle(1,:),ExactAtMiddle(2,:),'k');
-
-
-% Set up iteration parameters
-casedef.iteration.maxniter = 800;
-casedef.iteration.resTol     = 1.e-7;
-casedef.iteration.dt = 0.01;
-% relaxation factor
-casedef.relaxation = 0.03;
-
-% Call solver
-tic
-result = SIMPLEsolver(casedef);
-fprintf("Time: %.3f \n",toc)
-
-% % Plot result
-% % ux
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Ux"); colorbar();
-% fvmplotfield(result.U,scale,lw, 1);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("Uy"); colorbar();
-% fvmplotfield(result.U,scale,lw, 2);
-% figure; hold on; axis off; axis equal; colormap(jet(50));
-% scale = 'lin'; lw = 1; title("P"); colorbar();
-% fvmplotfield(result.P,scale,lw);
-% 
-% xi = [];
-% pi = [];
-% for i=1:length(casedef.P.data)
-%     p = casedef.P.data(i);
-%     coord = casedef.dom.cCoord(:,i);
-%     x = coord(1);
-%     y = coord(2);
-%     if y == 0.5 + dx/2
-%         if x>0
-%             xi = [xi, x];
-%             pi = [pi, p];
-%         else
-%             xi = [x, xi];
-%             pi = [p, pi];
-%         end
-%     end
-% end
-% figure;
-% plot(xi, pi)
-
-maxErr = 0;
-avgErr = 0;
-Ni=0;
-Err = Field(casedef.dom.allCells, 0);
-set(Err,zeros(1,U.elcountzone));
-comp_err = zeros(1, size(Err.data,2));
-ErrAtMiddle = [];
-ValueAtMiddle = [];
-ExactAtMiddle = [];
-for i=1:result.U.dom.nC
-    x = result.U.dom.cCoord(1,i);
-    y = result.U.dom.cCoord(2,i);
-    % Only keep the interior cells
-    if x>0 && y>0 && x<Lx && y<Ly
-        Uxapprox = result.U.data(1,i);
-        Uxexact = ufunc(x,y);
-        % Compute relative error
-        err = abs((Uxexact-Uxapprox));
-        comp_err(i) = err/abs(Uxexact);
-        % Compute average error
-        avgErr = avgErr + err;
-        Ni = Ni+1;
-        % Update maximum error
-        if err>maxErr
-            maxErr = err;
-            maxErrx = x;
-            maxErry = y;
-        end
-        if x == 0.5+dx/2
-            ErrAtMiddle = [ErrAtMiddle, [y; err]];
-            ValueAtMiddle = [ValueAtMiddle, [y; Uxapprox]];
-            ExactAtMiddle = [ExactAtMiddle, [y; Uxexact]];
-        end
-    end
-end
-set(Err,comp_err);
-figure; hold on; axis image; colormap(jet(50));
-scale = 'lin'; lw = 0.2; colorbar(); title('Error')
-fvmplotfield(Err,scale,lw);
-
-avgErr = avgErr/Ni;
-fprintf("Maximum error: %.10f \n", maxErr)
-fprintf("Average error: %.10f \n", avgErr)
-
-figure()
-hold on
 plot(ErrAtMiddle(1,:),ErrAtMiddle(2,:),'r');
-plot(ValueAtMiddle(1,:),ValueAtMiddle(2,:),'b');
-plot(ExactAtMiddle(1,:),ExactAtMiddle(2,:),'k');
-
-
+xlabel('y [m]','Interpreter','latex');
+ylabel('Velocity [m/s]','Interpreter','latex');
+legend({'Numerical','Exact','Error'}, 'Interpreter','latex')
+set(gca,'TickLabelInterpreter', 'latex');

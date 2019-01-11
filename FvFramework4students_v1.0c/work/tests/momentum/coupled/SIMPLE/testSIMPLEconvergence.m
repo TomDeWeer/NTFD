@@ -32,11 +32,13 @@ close all;
 clear;
 % mkdir('..\Figuren\Opgave 2.2');
 
-%% convergence experiment results
-Ns = [2, 4, 8, 16, 32];
+% convergence experiment results
+Ns = [2, 4, 8, 16, 32, 64, 128];
+Nnls = [2, 4, 8, 16, 32, 64, 128];
 MaximumErrors = [];
-MaximumErrorsPos = [];
 AverageErrors = [];
+MaximumErrorsNLS = [];
+AverageErrorsNLS = [];
 TotalTime = [];
 TotalTimeNLS = [];
 StepTime = [];
@@ -127,6 +129,13 @@ for N = Ns
     casedef.iteration.dt = 0.01;
     % relaxation factor
     casedef.relaxation = 0.1;
+    if N == 64
+        casedef.relaxation = 0.03;
+    end
+    if N == 128
+        casedef.iteration.maxniter = 800;
+        casedef.relaxation = 0.005;
+    end
 
     % Call solver
     tic
@@ -164,19 +173,14 @@ for N = Ns
             end
         end
     end
-    set(Err,comp_err);
-    figure; hold on; axis image; colormap(jet(50));
-    scale = 'lin'; lw = 0.2; colorbar(); title('Error')
-    fvmplotfield(Err,scale,lw);
     
     avgErr = avgErr/Ni;
     fprintf("Maximum error: %.10f \n", maxErr)
     MaximumErrors = [MaximumErrors, maxErr];
-    MaximumErrorsPos = [MaximumErrorsPos, [maxErrx; maxErry]];
     AverageErrors = [AverageErrors, avgErr];
     
 end
-Nnls = [2, 4, 8, 16, 32, 64, 128];
+
 for N = Nnls
     Nx = N;
     Ny = N;
@@ -250,27 +254,78 @@ for N = Nnls
     casedef.iteration.OptTol      = 1.e-6;
     result = coupledNLS(casedef);
     TotalTimeNLS = [TotalTimeNLS, result.output.time];
+    
+    maxErr = 0;
+    avgErr = 0;
+    Ni=0;
+    Err = Field(casedef.dom.allCells, 0);
+    set(Err,zeros(1,U.elcountzone));
+    comp_err = zeros(1, size(Err.data,2));
+    for i=1:result.U.dom.nC
+        x = result.U.dom.cCoord(1,i);
+        y = result.U.dom.cCoord(2,i);
+        % Only keep the interior cells
+        if x>0 && y>0 && x<Lx && y<Ly
+            Uxapprox = result.U.data(1,i);
+            Uxexact = realU(y);
+            % Compute relative error
+            err = abs((Uxexact-Uxapprox));
+            comp_err(i) = err/abs(Uxexact);
+            % Compute average error
+            avgErr = avgErr + err;
+            Ni = Ni+1;
+            % Update maximum error
+            if err>maxErr
+                maxErr = err;
+                maxErrx = x;
+                maxErry = y;
+            end
+        end
+    end
+    
+    avgErr = avgErr/Ni;
+    fprintf("Maximum error: %.10f \n", maxErr)
+    MaximumErrorsNLS = [MaximumErrorsNLS, maxErr];
+    AverageErrorsNLS = [AverageErrorsNLS, avgErr];
 end
 figure()
-loglog(Ns,MaximumErrors,':x','color','b')
+loglog(Nnls,AverageErrorsNLS,'-r.')
 hold on
 loglog(Ns,AverageErrors,'-b.')
 xlabel('N [-]','Interpreter','latex');
-ylabel('Error [m/s]','Interpreter','latex');
-legend('Maximum','Average', 'Interpreter','latex')
-title('Error','interpreter','latex');
+ylabel('Average error [m/s]','Interpreter','latex');
+legend({'Nonlinear solver','SIMPLE'}, 'Interpreter','latex')
+set(gca,'TickLabelInterpreter', 'latex');
+% saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
+
+figure()
+loglog(Nnls,MaximumErrorsNLS,'-r.')
+hold on
+loglog(Ns,MaximumErrors,'-b.')
+xlabel('N [-]','Interpreter','latex');
+ylabel('Maximum error [m/s]','Interpreter','latex');
+legend({'Nonlinear solver','SIMPLE'}, 'Interpreter','latex')
 set(gca,'TickLabelInterpreter', 'latex');
 % saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
 
 figure()
 hold on
 loglog(Ns,TotalTime,'-b.')
-%loglog(Ns,StepTime,':x','color','b')
-loglog(Nnls,TotalTimeNLS,'-r.')
+loglog(Ns,StepTime,':x','color','b')
 xlabel('N [-]','Interpreter','latex');
 ylabel('Time [s]','Interpreter','latex');
-legend('SIMPLE','Nonlinear equation solver', 'Interpreter','latex')
-title('Computing time','interpreter','latex');
+legend({'Total','Per step'}, 'Interpreter','latex')
+set(gca,'TickLabelInterpreter', 'latex');
+set(gca,'XScale', 'log','YScale', 'log')
+% saveas(gcf,fullfile(path,'Couette_error_convergence.png'));
+
+figure()
+hold on
+loglog(Nnls,TotalTimeNLS,'-r.')
+loglog(Ns,TotalTime,'-b.')
+xlabel('N [-]','Interpreter','latex');
+ylabel('Time [s]','Interpreter','latex');
+legend({'Nonlinear solver','SIMPLE'}, 'Interpreter','latex')
 set(gca,'TickLabelInterpreter', 'latex');
 set(gca,'XScale', 'log','YScale', 'log')
 % saveas(gcf,fullfile(path,'Couette_error_convergence.png'));

@@ -4,9 +4,9 @@ function result = SIMPLEsolver(casedef)
 dom = casedef.dom;
 
 % Create field objects
-% U = Field(dom.allCells,1);	% Velocity [m/s] (2D vector); empty field
-% reset(U,[0; 0]); 
-% set(U,casedef.U0.data);          % Set to given initial guess
+Uprev = Field(dom.allCells,1);  % Velocity [m/s] (2D vector); empty field
+reset(Uprev,[0; 0]);            % U from previous iteration, used in convergence testing.
+set(Uprev,casedef.U.data);     % Set to given initial guess.
 
 % Create an equation object for holding a vector conservation equation
 eqnU = ScalarFvEqn2(dom);
@@ -118,12 +118,19 @@ while iterate
 %     fvmplotfield(casedef.P,scale,lw);
     
     %%% CHECK CONVERGENCE BASED ON U', V' %%%
-    p = casedef.P.data';
-    u = casedef.U.data(1,:)';
-    v = casedef.U.data(2,:)';
-    x = [p; u; v];
-    residuals = NavierStokes(casedef, x);
-    resnorm = norm(residuals)/length(residuals);
+%     p = casedef.P.data';
+%     u = casedef.U.data(1,:)';
+%     v = casedef.U.data(2,:)';
+%     x = [p; u; v];
+%     residuals = NavierStokes(casedef, x);
+%     resnorm = norm(residuals);
+    du = 0;
+    Uint = 0;
+    for i = casedef.dom.nC
+        du = du + casedef.dom.cVol(i)*norm(Uprev.data(:,i)-casedef.U.data(:,i));
+        Uint = Uint + casedef.dom.cVol(i)*norm(casedef.U.data(:,i));
+    end
+    resnorm = du/Uint;
     fprintf("It %d : residual norm =  %.12f \n",niter, resnorm)
     if resnorm < casedef.iteration.resTol
         Uconverged = true;
@@ -137,6 +144,8 @@ while iterate
 %       Uconverged = false;
 %       iterate = false;
     end
+    set(Uprev,Uupdated)
+    
 end % iterate
 
 result.endtime = now; % call datestr(now) for displaying this time 
@@ -148,7 +157,7 @@ set(result.U,casedef.U.data);
 result.P = Field(dom.allCells,0);
 set(result.P, casedef.P.data)
 result.lastPcorr = Field(dom.allCells,0);
-set(result.P, Pcorr')
+set(result.lastPcorr, Pcorr')
 
 end
 

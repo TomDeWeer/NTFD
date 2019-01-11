@@ -10,7 +10,7 @@ set(Pcorr,zeros(1,dom.nC));
 A = sparse(double(dom.nC),double(dom.nC)) ; % contains pressure correction equations(1 for every pressure, even ghostcells)
 
 F = faceFluxes(casedef);
-F = F + RCcorrectionTerms(casedef, uP, vP);  % Rie-Chow correction
+F = F + RCcorrectionTerms(casedef, uP, vP);  % Rhie-Chow correction
 
 % Creating pressure corrections equations in internal cells:
 afGrad = zeros(1,dom.nC);

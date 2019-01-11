@@ -10,11 +10,8 @@
 % Test case: Lid Driven Cavity
 %
 % Uses the SIMPLE algorithm for the LDC problem.
-% Two cases are studied: Re=0.01(51x51grid) and Re=100(101x101grid). The
+% Two cases are studied: Re=0.01(51x51grid) and Re=100(51x51grid). The
 % results are compared to values from literature.
-% All analyses are performed using the following parameters:
-%     -  dt = 1e-5
-%     -  alpha = 0.05
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -50,7 +47,7 @@ casedef.dom = newdomain(mesh,'MyDomain');
 
 % Set up initial fields
 U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
-set(U,[Uxtop*ones(1,U.elcountzone);zeros(1,U.elcountzone)]);
+set(U,[Uxtop*zeros(1,U.elcountzone);zeros(1,U.elcountzone)]);
 casedef.U = U; % initial guess
 P = Field(casedef.dom.allCells,0); % Pressure
 set(P,zeros(1,P.elcountzone));
@@ -99,11 +96,11 @@ casedef.BC{jBC}.pressureKind   = 'Neumann';
 casedef.BC{jBC}.data.pressure = 0; % no normal pressure derivative
 casedef.BC{jBC}.isNormalized = 0;
 % Set up iteration parameters
-casedef.iteration.maxniter = 200;
-casedef.iteration.resTol = 1.e-6;
+casedef.iteration.maxniter = 800;
+casedef.iteration.resTol = 1.e-7;
 casedef.iteration.dt = 1e-5;
 % relaxation factor
-casedef.relaxation = 0.05;
+casedef.relaxation = 0.01;
 
 % Call solver
 tic
@@ -199,7 +196,7 @@ casedef.dom = newdomain(mesh,'MyDomain');
 
 % Set up initial fields
 U = Field(casedef.dom.allCells,1);     % Velocity [m/s] (vector);
-set(U,[Uxtop*ones(1,U.elcountzone);zeros(1,U.elcountzone)]);
+set(U,[Uxtop*zeros(1,U.elcountzone);zeros(1,U.elcountzone)]);
 casedef.U = U; % initial guess
 P = Field(casedef.dom.allCells,0); % Pressure
 set(P,zeros(1,P.elcountzone));
@@ -249,8 +246,8 @@ casedef.BC{jBC}.data.pressure = 0; % no normal pressure derivative
 casedef.BC{jBC}.isNormalized = 0;
 % Set up iteration parameters
 casedef.iteration.maxniter = 800;
-casedef.iteration.resTol = 1.e-6;
-casedef.iteration.dt = 0.01;
+casedef.iteration.resTol = 1.e-10;
+casedef.iteration.dt = 0.05;
 % relaxation factor
 casedef.relaxation = 0.1;
 
@@ -258,8 +255,6 @@ casedef.relaxation = 0.1;
 tic
 result = SIMPLEsolver(casedef);
 fprintf("Time: %.3f \n",toc)
-
-
 
 
 %%% compare with data from paper %%%
@@ -304,6 +299,7 @@ set(h,'interpreter','Latex','FontSize',11)
 set(gca,'TickLabelInterpreter', 'latex');
 title('$U_x$ at $x=0.5$','interpreter','latex')
 subplot(1,2,2);     % Subplot 2
+
 hold on
 plot(xlit,vRe100,'k:x')
 plot(xline,vline,'b')
